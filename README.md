@@ -54,4 +54,5 @@ BhagwatiProperty is a modern, responsive real estate platform that allows users 
 - Muskaan Balmiki
 - Web Developer
 
-
+🌐 Live Demo: https://propertiesbhagwati.netlify.app/
+ — Deployed and hosted on Netlify for fast, reliable access.
