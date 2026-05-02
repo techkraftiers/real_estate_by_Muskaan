@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blogs – myProperty Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary:       #1B6CA8;
+            --primary-dark:  #145a8e;
+            --primary-light: #e8f2fb;
+            --accent:        #C8392B;
+            --accent-light:  #fdf0ef;
+            --bg:            #f0f4f8;
+            --sidebar-bg:    #0d1b2a;
+            --sidebar-text:  #a8bbd0;
+            --white:         #ffffff;
+            --text-primary:  #1a2332;
+            --text-secondary:#5a6a7a;
+            --text-muted:    #8a9bac;
+            --border:        #e2eaf2;
+            --card-shadow:   0 2px 16px rgba(27,108,168,0.08);
+            --radius:        14px;
+            --radius-sm:     8px;
+            --success:       #1a9e5c;
+            --success-light: #e8f8f0;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family:'DM Sans', sans-serif;
+            background:var(--bg);
+            color:var(--text-primary);
+            display:flex;
+            min-height:100vh;
+        }
+
+        /* ─── Sidebar ─── */
+        .sidebar {
+            width:240px; background:var(--sidebar-bg);
+            display:flex; flex-direction:column; padding:28px 0;
+            position:fixed; top:0; left:0; height:100vh; z-index:100;
+        }
+        .logo {
+            display:flex; align-items:center; gap:10px;
+            padding:0 24px 32px;
+            border-bottom:1px solid rgba(255,255,255,0.06);
+        }
+        .logo i { font-size:22px; color:var(--primary); }
+        .logo span {
+            font-family:'Playfair Display', serif;
+            font-size:18px; font-weight:700; color:#fff; letter-spacing:0.3px;
+        }
+        .menu {
+            list-style:none; padding:24px 14px;
+            flex:1; display:flex; flex-direction:column; gap:4px;
+        }
+        .menu li a {
+            display:flex; align-items:center; gap:12px;
+            padding:11px 14px; border-radius:var(--radius-sm);
+            color:var(--sidebar-text); text-decoration:none;
+            font-size:14px; font-weight:400; transition:all 0.2s;
+        }
+        .menu li a i { width:18px; font-size:15px; text-align:center; }
+        .menu li a:hover { background:rgba(27,108,168,0.18); color:#fff; }
+        .menu li.active a { background:var(--primary); color:#fff; }
+        .sidebar .logout {
+            margin:0 14px 8px; display:flex; align-items:center; gap:12px;
+            padding:11px 14px; border-radius:var(--radius-sm);
+            color:#e57373; text-decoration:none; font-size:14px; transition:background 0.2s;
+        }
+        .sidebar .logout:hover { background:rgba(200,57,43,0.15); }
+
+        /* ─── Main ─── */
+        .main { margin-left:240px; flex:1; display:flex; flex-direction:column; min-height:100vh; }
+
+        /* ─── Header ─── */
+        .header {
+            background:var(--white); border-bottom:1px solid var(--border);
+            padding:16px 32px; display:flex; align-items:center;
+            justify-content:space-between; position:sticky; top:0; z-index:50;
+        }
+        .header-left h2 {
+            font-family:'Playfair Display', serif;
+            font-size:20px; color:var(--text-primary); font-weight:600;
+        }
+        .header-left p { font-size:13px; color:var(--text-muted); margin-top:2px; }
+        .header-right { display:flex; align-items:center; gap:16px; }
+        .notif-btn {
+            width:38px; height:38px; border-radius:10px;
+            border:1px solid var(--border); background:var(--white);
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; color:var(--text-secondary); font-size:15px; position:relative;
+        }
+        .notif-btn .dot {
+            width:7px; height:7px; background:var(--accent); border-radius:50%;
+            position:absolute; top:7px; right:7px; border:1.5px solid #fff;
+        }
+        .profile {
+            display:flex; align-items:center; gap:10px; cursor:pointer;
+            padding:6px 12px 6px 6px; border-radius:10px;
+            border:1px solid var(--border); background:var(--white);
+        }
+        .profile-avatar {
+            width:32px; height:32px; border-radius:8px; background:var(--primary);
+            display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px;
+        }
+        .profile span { font-size:13px; font-weight:500; color:var(--text-primary); }
+
+        /* ─── Content ─── */
+        .content { padding:28px 32px; display:flex; flex-direction:column; gap:24px; }
+
+        /* ─── Breadcrumb ─── */
+        .breadcrumb {
+            display:flex; align-items:center; gap:8px;
+            font-size:13px; color:var(--text-muted);
+        }
+        .breadcrumb a { color:var(--primary); text-decoration:none; font-weight:500; }
+        .breadcrumb a:hover { text-decoration:underline; }
+        .breadcrumb i { font-size:10px; }
+
+        ─── Stat Cards ───
+        .stats-grid {
+            display:grid; grid-template-columns:repeat(3,1fr); gap:16px;
+        }
+        .stat-card {
+            background:var(--white); border-radius:var(--radius);
+            padding:20px 22px; border:1px solid var(--border);
+            box-shadow:var(--card-shadow);
+            display:flex; align-items:center; gap:16px;
+            animation:fadeUp 0.4s ease both;
+        }
+        .stat-card:nth-child(1){animation-delay:0.05s}
+        .stat-card:nth-child(2){animation-delay:0.10s}
+        .stat-card:nth-child(3){animation-delay:0.15s}
+        .stat-icon {
+            width:48px; height:48px; border-radius:12px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:20px; flex-shrink:0;
+        }
+        .stat-icon.blue  { background:var(--primary-light); color:var(--primary); }
+        .stat-icon.green { background:var(--success-light);  color:var(--success); }
+        .stat-icon.amber { background:#fef6e4; color:#d4890a; }
+        .stat-info p  { font-size:12px; color:var(--text-muted); margin-bottom:4px; }
+        .stat-info h3 { font-size:22px; font-weight:600; color:var(--text-primary); line-height:1; }
+
+        /* ─── Section Heading ─── */
+        .section-heading {
+            display:flex; align-items:center; justify-content:space-between;
+        }
+        .section-heading h2 {
+            font-family:'Playfair Display', serif;
+            font-size:18px; font-weight:600; color:var(--text-primary);
+        }
+        .btn-add {
+            display:flex; align-items:center; gap:8px;
+            padding:10px 22px; border-radius:var(--radius-sm);
+            background:var(--primary); color:#fff; border:none;
+            font-size:13.5px; font-weight:600; font-family:'DM Sans', sans-serif;
+            cursor:pointer; box-shadow:0 4px 14px rgba(27,108,168,0.3);
+            transition:all 0.2s;
+        }
+        .btn-add:hover { background:var(--primary-dark); transform:translateY(-1px); box-shadow:0 6px 18px rgba(27,108,168,0.38); }
+
+        /* ─── Blog Cards Grid ─── */
+        .blog-grid {
+            display:grid; grid-template-columns:repeat(3,1fr); gap:18px;
+        }
+
+        /* Add-new placeholder card */
+        .blog-card-add {
+            border:2px dashed var(--border);
+            border-radius:var(--radius);
+            background:transparent;
+            display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+            gap:12px; min-height:300px;
+            cursor:pointer; transition:all 0.22s;
+            animation:fadeUp 0.5s ease 0.3s both;
+        }
+        .blog-card-add:hover {
+            border-color:var(--primary);
+            background:var(--primary-light);
+        }
+        .blog-card-add .add-circle {
+            width:52px; height:52px; border-radius:50%;
+            background:var(--primary-light); color:var(--primary);
+            display:flex; align-items:center; justify-content:center;
+            font-size:22px; transition:all 0.22s;
+        }
+        .blog-card-add:hover .add-circle {
+            background:var(--primary); color:#fff;
+        }
+        .blog-card-add p {
+            font-size:13.5px; font-weight:600; color:var(--text-muted);
+        }
+        .blog-card-add:hover p { color:var(--primary); }
+
+        /* Blog content card */
+        .blog-card {
+            background:var(--white); border-radius:var(--radius);
+            border:1px solid var(--border); overflow:hidden;
+            box-shadow:var(--card-shadow);
+            transition:transform 0.2s, box-shadow 0.2s;
+            animation:fadeUp 0.5s ease both;
+            display:flex; flex-direction:column;
+        }
+        .blog-card:hover {
+            transform:translateY(-3px);
+            box-shadow:0 8px 28px rgba(27,108,168,0.14);
+        }
+
+        .blog-img {
+            width:100%; height:176px; overflow:hidden;
+            background:var(--primary-light);
+            display:flex; align-items:center; justify-content:center;
+            position:relative; flex-shrink:0;
+        }
+        .blog-img img {
+            width:100%; height:100%; object-fit:cover;
+            transition:transform 0.4s;
+        }
+        .blog-card:hover .blog-img img { transform:scale(1.04); }
+        .blog-img .img-ph {
+            font-size:42px; color:var(--primary); opacity:0.3;
+        }
+
+        /* Date ribbon on image */
+        .date-ribbon {
+            position:absolute; bottom:10px; left:10px;
+            background:rgba(13,27,42,0.72);
+            backdrop-filter:blur(4px);
+            color:#fff; font-size:11.5px; font-weight:600;
+            padding:4px 10px; border-radius:6px;
+            display:flex; align-items:center; gap:5px;
+            letter-spacing:0.2px;
+        }
+        .date-ribbon i { font-size:10px; opacity:0.8; }
+
+        .blog-body { padding:16px 18px 18px; flex:1; display:flex; flex-direction:column; }
+
+        .blog-author {
+            display:flex; align-items:center; gap:8px;
+            margin-bottom:10px;
+        }
+        .author-avatar {
+            width:30px; height:30px; border-radius:50%;
+            background:var(--primary); color:#fff;
+            display:flex; align-items:center; justify-content:center;
+            font-size:12px; font-weight:700; flex-shrink:0;
+        }
+        .author-name {
+            font-size:13px; font-weight:600; color:var(--text-primary);
+        }
+        .author-label {
+            font-size:11px; color:var(--text-muted);
+        }
+
+        .blog-title-text {
+            font-size:14.5px; font-weight:600; color:var(--text-primary);
+            line-height:1.45; margin-bottom:auto;
+            display:-webkit-box; -webkit-line-clamp:2;
+            -webkit-box-orient:vertical; overflow:hidden;
+        }
+
+        .blog-footer {
+            display:flex; gap:8px;
+            padding-top:14px; margin-top:14px;
+            border-top:1px solid var(--border);
+        }
+        .btn-del {
+            flex:1; display:flex; align-items:center; justify-content:center;
+            gap:6px; padding:8px 0;
+            border-radius:var(--radius-sm); font-size:12.5px;
+            font-family:'DM Sans', sans-serif; font-weight:600;
+            cursor:pointer; border:none; transition:all 0.18s;
+        }
+        .btn-del { background:var(--accent-light); color:var(--accent); }
+        .btn-del:hover { background:var(--accent); color:#fff; }
+
+        /* Empty state */
+        .empty-state {
+            grid-column:1 / -1;
+            display:flex; flex-direction:column; align-items:center;
+            justify-content:center; padding:60px 20px; gap:12px;
+            color:var(--text-muted);
+        }
+        .empty-state i { font-size:40px; opacity:0.3; }
+        .empty-state p { font-size:14px; font-weight:500; }
+
+        /* ─── Add Blog Modal ─── */
+        .modal-overlay {
+            position:fixed; inset:0;
+            background:rgba(13,27,42,0.55);
+            backdrop-filter:blur(4px);
+            z-index:200; display:none;
+            align-items:center; justify-content:center; padding:20px;
+        }
+        .modal-overlay.open { display:flex; }
+
+        .modal {
+            background:var(--white); border-radius:var(--radius);
+            width:100%; max-width:560px; max-height:90vh;
+            display:flex; flex-direction:column;
+            box-shadow:0 24px 60px rgba(0,0,0,0.2);
+            animation:modalIn 0.28s cubic-bezier(.4,0,.2,1) both;
+        }
+        @keyframes modalIn {
+            from { opacity:0; transform:translateY(22px) scale(0.97); }
+            to   { opacity:1; transform:translateY(0) scale(1); }
+        }
+
+        .modal-header {
+            padding:20px 24px; border-bottom:1px solid var(--border);
+            display:flex; align-items:center; gap:14px; flex-shrink:0;
+        }
+        .modal-icon {
+            width:44px; height:44px; border-radius:12px;
+            background:var(--primary-light); color:var(--primary);
+            display:flex; align-items:center; justify-content:center; font-size:18px;
+        }
+        .modal-header h3 {
+            font-family:'Playfair Display', serif;
+            font-size:17px; font-weight:600; color:var(--text-primary);
+        }
+        .modal-header p { font-size:12.5px; color:var(--text-muted); margin-top:1px; }
+        .modal-close {
+            margin-left:auto; width:32px; height:32px;
+            border-radius:8px; border:1px solid var(--border);
+            background:var(--bg); color:var(--text-muted);
+            font-size:14px; cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+            transition:all 0.18s;
+        }
+        .modal-close:hover { background:var(--accent-light); color:var(--accent); border-color:var(--accent); }
+
+        .modal-body {
+            padding:24px; overflow-y:auto; flex:1;
+            display:flex; flex-direction:column; gap:18px;
+        }
+
+        .form-group { display:flex; flex-direction:column; gap:7px; }
+        .form-group label {
+            font-size:12.5px; font-weight:600; color:var(--text-secondary);
+            display:flex; align-items:center; gap:6px;
+        }
+        .form-group label i { color:var(--primary); font-size:11px; }
+        .form-group label .req { color:var(--accent); }
+
+        .form-group input[type="text"],
+        .form-group input[type="date"] {
+            width:100%; border:1.5px solid var(--border);
+            border-radius:var(--radius-sm); padding:10px 14px;
+            font-size:14px; font-family:'DM Sans', sans-serif;
+            color:var(--text-primary); background:var(--bg);
+            outline:none; transition:border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-group input:focus {
+            border-color:var(--primary); background:var(--white);
+            box-shadow:0 0 0 3px rgba(27,108,168,0.08);
+        }
+        .form-group input::placeholder { color:var(--text-muted); }
+
+        /* Upload zone */
+        .upload-zone {
+            border:2px dashed var(--border); border-radius:var(--radius-sm);
+            padding:26px 20px; text-align:center; cursor:pointer;
+            transition:all 0.2s; background:var(--bg); position:relative;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color:var(--primary); background:var(--primary-light);
+        }
+        .upload-zone input[type="file"] {
+            position:absolute; inset:0; opacity:0; cursor:pointer;
+            width:100%; height:100%; border:none; padding:0; background:none;
+        }
+        .upload-zone i { font-size:28px; color:var(--primary); opacity:0.55; margin-bottom:8px; display:block; }
+        .upload-zone p { font-size:13.5px; color:var(--text-secondary); font-weight:500; }
+        .upload-zone small { font-size:12px; color:var(--text-muted); margin-top:3px; display:block; }
+
+        .preview-wrap {
+            display:none; align-items:center; gap:12px;
+            margin-top:10px; padding:10px 14px;
+            background:var(--success-light); border-radius:var(--radius-sm);
+            border:1px solid #b8ecd0;
+        }
+        .preview-wrap.show { display:flex; }
+        .preview-thumb {
+            width:60px; height:44px; border-radius:6px;
+            object-fit:cover; border:1.5px solid var(--border); flex-shrink:0;
+        }
+        .preview-info p { font-size:13px; font-weight:600; color:var(--text-primary); }
+        .preview-info span { font-size:12px; color:var(--text-muted); }
+        .preview-clear {
+            margin-left:auto; background:none; border:none;
+            color:var(--text-muted); font-size:14px; cursor:pointer;
+            padding:4px; border-radius:4px; transition:color 0.15s;
+        }
+        .preview-clear:hover { color:var(--accent); }
+
+        .modal-footer {
+            padding:16px 24px; border-top:1px solid var(--border);
+            display:flex; align-items:center; justify-content:flex-end;
+            gap:10px; flex-shrink:0;
+        }
+        .btn-cancel-m {
+            padding:10px 20px; border-radius:var(--radius-sm);
+            border:1.5px solid var(--border); background:var(--white);
+            color:var(--text-secondary); font-size:13.5px;
+            font-family:'DM Sans', sans-serif; font-weight:500; cursor:pointer;
+            display:flex; align-items:center; gap:6px; transition:all 0.2s;
+        }
+        .btn-cancel-m:hover { background:var(--bg); color:var(--text-primary); }
+        .btn-save {
+            padding:10px 26px; border-radius:var(--radius-sm);
+            border:none; background:var(--primary); color:#fff;
+            font-size:13.5px; font-family:'DM Sans', sans-serif; font-weight:600;
+            cursor:pointer; display:flex; align-items:center; gap:8px;
+            box-shadow:0 4px 14px rgba(27,108,168,0.3); transition:all 0.2s;
+        }
+        .btn-save:hover { background:var(--primary-dark); transform:translateY(-1px); }
+
+        /* ─── Delete Confirm Modal ─── */
+        .del-modal {
+            background:var(--white); border-radius:var(--radius);
+            width:100%; max-width:380px; padding:30px 28px; text-align:center;
+            box-shadow:0 24px 60px rgba(0,0,0,0.2);
+            animation:modalIn 0.25s ease both;
+        }
+        .del-icon {
+            width:58px; height:58px; border-radius:50%;
+            background:var(--accent-light); color:var(--accent);
+            font-size:22px; display:flex; align-items:center;
+            justify-content:center; margin:0 auto 16px;
+        }
+        .del-modal h3 {
+            font-family:'Playfair Display', serif;
+            font-size:17px; color:var(--text-primary); margin-bottom:8px;
+        }
+        .del-modal p { font-size:13.5px; color:var(--text-secondary); margin-bottom:24px; line-height:1.6; }
+        .del-actions { display:flex; gap:10px; justify-content:center; }
+        .btn-del-confirm {
+            padding:10px 24px; border-radius:var(--radius-sm);
+            border:none; background:var(--accent); color:#fff;
+            font-size:13.5px; font-family:'DM Sans', sans-serif;
+            font-weight:600; cursor:pointer; transition:all 0.18s;
+            display:flex; align-items:center; gap:7px;
+        }
+        .btn-del-confirm:hover { background:#a62e22; }
+
+        /* ─── Toast ─── */
+        .toast {
+            position:fixed; bottom:28px; right:28px;
+            color:#fff; padding:13px 18px; border-radius:var(--radius-sm);
+            font-size:13.5px; font-weight:500;
+            display:flex; align-items:center; gap:10px;
+            box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:999;
+            animation:toastIn 0.3s ease;
+        }
+        .toast.green { background:var(--success); }
+        .toast.red   { background:var(--accent); }
+        @keyframes toastIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ─── Animations ─── */
+        @keyframes fadeUp {
+            from { opacity:0; transform:translateY(14px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width:1100px) { .blog-grid { grid-template-columns:repeat(2,1fr); } .stats-grid { grid-template-columns:repeat(3,1fr); } }
+        @media (max-width:768px) {
+            .sidebar { width:60px; }
+            .sidebar .logo span, .menu li a span, .sidebar .logout span { display:none; }
+            .main { margin-left:60px; }
+            .content { padding:20px 16px; }
+            .header { padding:14px 16px; }
+            .blog-grid { grid-template-columns:1fr; }
+            .stats-grid { grid-template-columns:1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── Sidebar ── -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-house-chimney"></i>
+            <span>myProperty</span>
+        </div>
+        <ul class="menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-grip"></i> <span>Dashboard</span></a></li>
+            <li><a href="add_properties.html"><i class="fa-solid fa-house-chimney-user"></i> <span>Add Properties</span></a></li>
+            <li><a href="manage_property.html"><i class="fa-solid fa-desktop"></i> <span>Manage Property</span></a></li>
+            <li><a href="latest_msg.html"><i class="fa-solid fa-message"></i> <span>Messages</span></a></li>
+            <li class="active"><a href="blogs.html"><i class="fa-solid fa-rss"></i> <span>Blogs</span></a></li>
+        </ul>
+        <a href="#" class="logout"><i class="fa-solid fa-right-from-bracket"></i> <span>Log out</span></a>
+    </div>
+
+    <!-- ── Main ── -->
+    <div class="main">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <p>Welcome back, <span class="admin-name">Admin</span></p>
+                <h2>Blogs</h2>
+                <p>Manage and publish your blog posts</p>
+            </div>
+            <div class="header-right">
+                <div class="notif-btn">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="dot"></span>
+                </div>
+                <div class="profile">
+                    <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
+                    <span class="admin-name">Admin</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="dashboard.html"><i class="fa-solid fa-grip"></i> Dashboard</a>
+                <i class="fa-solid fa-chevron-right"></i>
+                <span>Blogs</span>
+            </div>
+
+            <!-- Stats -->
+            <!-- <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fa-solid fa-newspaper"></i></div>
+                    <div class="stat-info"><p>Total Blogs</p><h3 id="s-total">3</h3></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fa-solid fa-user-pen"></i></div>
+                    <div class="stat-info"><p>Authors</p><h3 id="s-authors">2</h3></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon amber"><i class="fa-solid fa-calendar-days"></i></div>
+                    <div class="stat-info"><p>This Month</p><h3 id="s-month">2</h3></div>
+                </div>
+            </div> -->
+
+            <!-- Heading + Add button -->
+            <div class="section-heading">
+                <h2>All Blog Posts</h2>
+                <button class="btn-add" onclick="openModal()">
+                    <i class="fa-solid fa-plus"></i> Add Blog
+                </button>
+            </div>
+
+            <!-- Blog Cards Grid -->
+            <div class="blog-grid" id="blog-grid">
+                <!-- Rendered by JS -->
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- ══════════════════════════
+         ADD BLOG MODAL
+    ══════════════════════════ -->
+    <div class="modal-overlay" id="add-modal">
+        <div class="modal">
+
+            <div class="modal-header">
+                <div class="modal-icon"><i class="fa-solid fa-newspaper"></i></div>
+                <div>
+                    <h3>Add New Blog</h3>
+                    <p>Upload a cover image, author name and publish date</p>
+                </div>
+                <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- Cover Image -->
+                <div class="form-group">
+                    <label><i class="fa-solid fa-image"></i> Cover Image <span class="req">*</span></label>
+                    <div class="upload-zone" id="upload-zone">
+                        <input type="file" id="img-input" accept="image/*">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <p>Click or drag & drop your cover image</p>
+                        <small>PNG, JPG, WEBP — up to 5 MB</small>
+                    </div>
+                    <div class="preview-wrap" id="preview-wrap">
+                        <img class="preview-thumb" id="preview-thumb" src="" alt="preview">
+                        <div class="preview-info">
+                            <p id="preview-name"></p>
+                            <span id="preview-size"></span>
+                        </div>
+                        <button class="preview-clear" onclick="clearImage()" title="Remove image">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Author Name -->
+                <div class="form-group">
+                    <label><i class="fa-solid fa-user-pen"></i> Author Name <span class="req">*</span></label>
+                    <input type="text" id="f-author" placeholder="e.g. Mrunali Mohite">
+                </div>
+
+                <!-- Blog Title -->
+                <div class="form-group">
+                    <label><i class="fa-solid fa-heading"></i> Blog Title <span class="req">*</span></label>
+                    <input type="text" id="f-title" placeholder="e.g. Top 5 Tips for Home Buyers in Mumbai">
+                </div>
+
+                <!-- Published Date -->
+                <div class="form-group">
+                    <label><i class="fa-solid fa-calendar-days"></i> Published Date <span class="req">*</span></label>
+                    <input type="date" id="f-date">
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-cancel-m" onclick="closeModal()">
+                    <i class="fa-solid fa-xmark"></i> Cancel
+                </button>
+                <button class="btn-save" onclick="saveBlog()">
+                    <i class="fa-solid fa-floppy-disk"></i> Publish Blog
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- ══════════════════════════
+         DELETE CONFIRM MODAL
+    ══════════════════════════ -->
+    <div class="modal-overlay" id="del-modal">
+        <div class="del-modal">
+            <div class="del-icon"><i class="fa-solid fa-trash-can"></i></div>
+            <h3>Delete Blog Post?</h3>
+            <p>This blog post will be permanently removed.<br>This action cannot be undone.</p>
+            <div class="del-actions">
+                <button class="btn-cancel-m" onclick="closeDelModal()">
+                    <i class="fa-solid fa-xmark"></i> Cancel
+                </button>
+                <button class="btn-del-confirm" onclick="confirmDelete()">
+                    <i class="fa-solid fa-trash-can"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast green" id="toast" style="display:none">
+        <i class="fa-solid fa-circle-check" id="toast-icon"></i>
+        <span id="toast-msg">Done!</span>
+    </div>
+
+
+    <script>
+    /* ════════════════════════════════════
+       DATA  (replace with PHP fetch later)
+    ════════════════════════════════════ */
+    let blogs = [
+        { id:1, title:"Top 5 Tips for First-Time Home Buyers in Mumbai",   author:"Mrunali Mohite", date:"2026-03-05", img:"" },
+        { id:2, title:"How to Find the Best Rental Flat in Pune Under ₹20k", author:"Rahul Sharma",  date:"2026-03-18", img:"" },
+        { id:3, title:"Is 2026 the Right Time to Invest in Real Estate?",   author:"Mrunali Mohite", date:"2026-03-22", img:"" },
+    ];
+    let nextId     = 4;
+    let deletingId = null;
+    let imgDataUrl = '';
+
+    /* ── Helpers ── */
+    function initials(name) {
+        return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    }
+    function formatDate(d) {
+        if (!d) return '';
+        const [y,m,day] = d.split('-');
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return `${parseInt(day)} ${months[parseInt(m)-1]} ${y}`;
+    }
+    function currentMonth() {
+        return new Date().toISOString().slice(0,7); // "YYYY-MM"
+    }
+
+    /* ── Update stats ── */
+    function updateStats() {
+        document.getElementById('s-total').textContent   = blogs.length;
+        const authors = new Set(blogs.map(b=>b.author));
+        document.getElementById('s-authors').textContent = authors.size;
+        const thisMonth = blogs.filter(b => b.date && b.date.startsWith(currentMonth())).length;
+        document.getElementById('s-month').textContent   = thisMonth;
+    }
+
+    /* ── Render grid ── */
+    function render() {
+        const grid = document.getElementById('blog-grid');
+        let html = '';
+
+        blogs.forEach((b, i) => {
+            const delay = (i * 0.06).toFixed(2);
+            html += `
+            <div class="blog-card" style="animation-delay:${delay}s">
+                <div class="blog-img">
+                    ${b.img
+                        ? `<img src="${b.img}" alt="${b.title}">`
+                        : `<i class="fa-solid fa-newspaper img-ph"></i>`}
+                    <div class="date-ribbon">
+                        <i class="fa-solid fa-calendar"></i>
+                        ${formatDate(b.date)}
+                    </div>
+                </div>
+                <div class="blog-body">
+                    <div class="blog-author">
+                        <div class="author-avatar">${initials(b.author)}</div>
+                        <div>
+                            <div class="author-name">${b.author}</div>
+                            <div class="author-label">Author</div>
+                        </div>
+                    </div>
+                    <p class="blog-title-text">${b.title}</p>
+                    <div class="blog-footer">
+                        <button class="btn-del" style="background:var(--accent-light);color:var(--accent)"
+                            onclick="openDelModal(${b.id})">
+                            <i class="fa-solid fa-trash-can"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        });
+
+        /* Add-new placeholder always at the end */
+        html += `
+        <div class="blog-card-add" onclick="openModal()">
+            <div class="add-circle"><i class="fa-solid fa-plus"></i></div>
+            <p>Add New Blog</p>
+        </div>`;
+
+        grid.innerHTML = html;
+        updateStats();
+    }
+
+    /* ══════════════════════════
+       ADD MODAL
+    ══════════════════════════ */
+    function openModal() {
+        imgDataUrl = '';
+        document.getElementById('f-author').value = '';
+        document.getElementById('f-title').value  = '';
+        document.getElementById('f-date').value   = new Date().toISOString().slice(0,10);
+        document.getElementById('img-input').value = '';
+        document.getElementById('preview-wrap').classList.remove('show');
+        document.getElementById('add-modal').classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('add-modal').classList.remove('open');
+    }
+
+    function saveBlog() {
+        const author = document.getElementById('f-author').value.trim();
+        const title  = document.getElementById('f-title').value.trim();
+        const date   = document.getElementById('f-date').value;
+
+        if (!author || !title || !date) {
+            showToast('Please fill all required fields.', 'red'); return;
+        }
+
+        blogs.unshift({ id: nextId++, title, author, date, img: imgDataUrl });
+        closeModal();
+        render();
+        showToast('Blog published successfully!', 'green');
+    }
+
+    /* ══════════════════════════
+       DELETE MODAL
+    ══════════════════════════ */
+    function openDelModal(id) {
+        deletingId = id;
+        document.getElementById('del-modal').classList.add('open');
+    }
+    function closeDelModal() {
+        document.getElementById('del-modal').classList.remove('open');
+    }
+    function confirmDelete() {
+        blogs = blogs.filter(b => b.id !== deletingId);
+        closeDelModal();
+        render();
+        showToast('Blog post deleted.', 'red');
+    }
+
+    /* Close modals on overlay click */
+    document.getElementById('add-modal').addEventListener('click', e => { if (e.target === document.getElementById('add-modal')) closeModal(); });
+    document.getElementById('del-modal').addEventListener('click', e => { if (e.target === document.getElementById('del-modal')) closeDelModal(); });
+
+    /* ══════════════════════════
+       IMAGE UPLOAD
+    ══════════════════════════ */
+    document.getElementById('img-input').addEventListener('change', function() {
+        const file = this.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            imgDataUrl = e.target.result;
+            document.getElementById('preview-thumb').src         = e.target.result;
+            document.getElementById('preview-name').textContent  = file.name;
+            document.getElementById('preview-size').textContent  = (file.size/1024).toFixed(1) + ' KB';
+            document.getElementById('preview-wrap').classList.add('show');
+        };
+        reader.readAsDataURL(file);
+    });
+
+    function clearImage() {
+        imgDataUrl = '';
+        document.getElementById('img-input').value = '';
+        document.getElementById('preview-wrap').classList.remove('show');
+    }
+
+    /* Drag & Drop */
+    const uz = document.getElementById('upload-zone');
+    uz.addEventListener('dragover',  e => { e.preventDefault(); uz.classList.add('dragover'); });
+    uz.addEventListener('dragleave', ()  => uz.classList.remove('dragover'));
+    uz.addEventListener('drop', e => {
+        e.preventDefault(); uz.classList.remove('dragover');
+        const file = e.dataTransfer.files[0]; if (!file) return;
+        const dt = new DataTransfer(); dt.items.add(file);
+        document.getElementById('img-input').files = dt.files;
+        document.getElementById('img-input').dispatchEvent(new Event('change'));
+    });
+
+    /* ══════════════════════════
+       TOAST
+    ══════════════════════════ */
+    function showToast(msg, color='green') {
+        const t   = document.getElementById('toast');
+        const ico = document.getElementById('toast-icon');
+        t.className = `toast ${color}`;
+        ico.className = color === 'green'
+            ? 'fa-solid fa-circle-check'
+            : 'fa-solid fa-circle-xmark';
+        document.getElementById('toast-msg').textContent = msg;
+        t.style.display = 'flex';
+        setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    /* ── Init ── */
+    render();
+    </script>
+    <script>
+    (function(){
+        const token = localStorage.getItem('bp_token');
+        const user  = JSON.parse(localStorage.getItem('bp_user') || 'null');
+        if (!token || !user) { window.location.href = 'login.html'; return; }
+        document.addEventListener('DOMContentLoaded', function(){
+            const name = user.name ? user.name.split(' ')[0] : 'Admin';
+            document.querySelectorAll('.admin-name').forEach(el => el.textContent = name);
+        });
+    })();
+    function bpLogout(){ localStorage.removeItem('bp_token'); localStorage.removeItem('bp_user'); window.location.href = 'login.html'; }
+</script>
+
+
+</body>
+</html>

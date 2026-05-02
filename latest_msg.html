@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latest Messages – myProperty</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1B6CA8;
+            --primary-dark: #145a8e;
+            --primary-light: #e8f2fb;
+            --accent: #C8392B;
+            --accent-light: #fdf0ef;
+            --bg: #f0f4f8;
+            --sidebar-bg: #0d1b2a;
+            --sidebar-text: #a8bbd0;
+            --white: #ffffff;
+            --text-primary: #1a2332;
+            --text-secondary: #5a6a7a;
+            --text-muted: #8a9bac;
+            --border: #e2eaf2;
+            --card-shadow: 0 2px 16px rgba(27,108,168,0.08);
+            --radius: 14px;
+            --radius-sm: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 240px;
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            padding: 28px 0;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 24px 32px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .logo i { font-size: 22px; color: var(--primary); }
+
+        .logo span {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .menu {
+            list-style: none;
+            padding: 24px 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .menu li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .menu li a i { width: 18px; font-size: 15px; text-align: center; }
+        .menu li a:hover { background: rgba(27,108,168,0.18); color: #fff; }
+        .menu li.active a { background: var(--primary); color: #fff; }
+
+        .sidebar .logout {
+            margin: 0 14px 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            color: #e57373;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .sidebar .logout:hover { background: rgba(200,57,43,0.15); }
+
+        /* ── Main ── */
+        .main {
+            margin-left: 240px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-left h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-left p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        .header-right { display: flex; align-items: center; gap: 12px; }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px 6px 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--white);
+        }
+
+        .profile-avatar {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 14px;
+        }
+
+        .profile span { font-size: 13px; font-weight: 500; }
+
+        /* ── Content ── */
+        .content { padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; }
+
+        /* ── Stat row ── */
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.05s; }
+        .stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .stat-card:nth-child(3) { animation-delay: 0.15s; }
+
+        .stat-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.blue  { background: var(--primary-light); color: var(--primary); }
+        .stat-icon.green { background: #e8f8f0; color: #1a9e5c; }
+        .stat-icon.amber { background: #fef6e4; color: #d4890a; }
+
+        .stat-info p  { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .stat-info h3 { font-size: 22px; font-weight: 600; color: var(--text-primary); line-height: 1; }
+
+        /* ── Toolbar ── */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            width: 260px;
+        }
+
+        .search-input-wrap i { color: var(--text-muted); font-size: 13px; }
+
+        .search-input-wrap input {
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            color: var(--text-primary);
+            outline: none;
+            width: 100%;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .search-input-wrap input::placeholder { color: var(--text-muted); }
+
+        .total-badge { font-size: 13px; color: var(--text-muted); }
+        .total-badge span { font-weight: 600; color: var(--text-primary); }
+
+        /* ── Table Card ── */
+        .table-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            animation: fadeUp 0.45s ease 0.1s both;
+        }
+
+        .table-wrap { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            min-width: 750px;
+        }
+
+        thead tr {
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        thead th {
+            padding: 13px 18px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: var(--primary-light); }
+
+        tbody td {
+            padding: 14px 18px;
+            color: var(--text-primary);
+            vertical-align: middle;
+        }
+
+        /* ID badge */
+        .td-id {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        /* Avatar */
+        .sender-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .sender-name { font-weight: 500; font-size: 13.5px; }
+
+        .td-phone { color: var(--text-secondary); font-size: 13px; }
+
+        .td-email {
+            color: var(--primary);
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .td-email:hover { text-decoration: underline; }
+
+        .td-msg {
+            max-width: 220px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .td-date { color: var(--text-muted); font-size: 12.5px; white-space: nowrap; }
+
+        /* Unread dot */
+        .unread-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: inline-block;
+            margin-right: 6px;
+            flex-shrink: 0;
+        }
+
+        /* Reply button */
+        .reply-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .reply-btn:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Empty state */
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .empty-state i { font-size: 40px; margin-bottom: 14px; color: var(--border); display: block; }
+        .empty-state p { font-size: 15px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+        .empty-state small { font-size: 13px; color: var(--text-muted); }
+
+        /* ── Message Modal ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(13,27,42,0.45);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            background: var(--white);
+            border-radius: var(--radius);
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+            animation: fadeUp 0.25s ease both;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-header h3 i { color: var(--primary); }
+
+        .modal-close {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            transition: all 0.15s;
+        }
+
+        .modal-close:hover { background: var(--bg); color: var(--text-primary); }
+
+        .modal-body { padding: 20px 22px; }
+
+        .modal-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .modal-meta-item p { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; }
+        .modal-meta-item span { font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
+
+        .modal-msg-box {
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            border: 1px solid var(--border);
+        }
+
+        .modal-footer {
+            padding: 14px 22px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-reply-btn {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 20px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .modal-reply-btn:hover { background: var(--primary-dark); }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            padding: 14px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 999;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        .toast.success { background: #e8f8f0; color: #1a9e5c; border: 1px solid #b2e8cc; display: flex; }
+        .toast.error   { background: var(--accent-light); color: var(--accent); border: 1px solid #f5bdb8; display: flex; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 900px) {
+            .stat-row { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 60px; }
+            .sidebar .logo span,
+            .menu li a span,
+            .sidebar .logout span { display: none; }
+            .main { margin-left: 60px; }
+            .header { padding: 14px 16px; }
+            .content { padding: 20px 16px; }
+            .stat-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-house-chimney"></i>
+            <span>myProperty</span>
+        </div>
+        <ul class="menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-grip"></i> <span>Dashboard</span></a></li>
+            <li><a href="add_properties.html"><i class="fa-solid fa-house-chimney-user"></i> <span>Add Properties</span></a></li>
+            <li><a href="manage_property.html"><i class="fa-solid fa-desktop"></i> <span>Manage Property</span></a></li>
+            <li class="active"><a href="latest_msg.html"><i class="fa-solid fa-message"></i> <span>Messages</span></a></li>
+        </ul>
+        <a href="#" class="logout"><i class="fa-solid fa-right-from-bracket"></i> <span>Log out</span></a>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                 <!-- Welcome text -->
+                <p>Welcome back, <span class="admin-name">Admin</span></p>
+                <h2>Latest Messages</h2>
+                <p>All enquiries from potential buyers and renters</p>
+            </div>
+            <div class="header-right">
+                <a href="dashboard.html" class="back-btn">
+                    <i class="fa-solid fa-arrow-left"></i> Dashboard
+                </a>
+                <div class="profile">
+                    <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
+                    <!-- Profile name top right -->
+                    <span class="admin-name">Admin</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+
+            <!-- Stat Row -->
+            <div class="stat-row">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fa-solid fa-envelope"></i></div>
+                    <div class="stat-info">
+                        <p>Total Messages</p>
+                        <h3 id="statTotal">0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fa-solid fa-envelope-open"></i></div>
+                    <div class="stat-info">
+                        <p>Read</p>
+                        <h3 id="statRead">0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon amber"><i class="fa-solid fa-clock"></i></div>
+                    <div class="stat-info">
+                        <p>Unread</p>
+                        <h3 id="statUnread">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="search-input-wrap">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Search by name, email, message...">
+                </div>
+                <div class="total-badge">Showing <span id="totalCount">0</span> messages</div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-card">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Sender</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                <th>Message</th>
+                                <th>Date & Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                    <div class="empty-state" id="emptyState" style="display:none">
+                        <i class="fa-solid fa-inbox"></i>
+                        <p>No messages found</p>
+                        <small>Try a different search term</small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Message Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-envelope-open-text"></i> Message Details</h3>
+                <button class="modal-close" onclick="closeModalDirect()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-meta">
+                    <div class="modal-meta-item">
+                        <p>Name</p>
+                        <span id="modalName">–</span>
+                    </div>
+                    <div class="modal-meta-item">
+                        <p>Phone</p>
+                        <span id="modalPhone">–</span>
+                    </div>
+                    <div class="modal-meta-item">
+                        <p>Email</p>
+                        <span id="modalEmail">–</span>
+                    </div>
+                    <div class="modal-meta-item">
+                        <p>Date</p>
+                        <span id="modalDate">–</span>
+                    </div>
+                </div>
+                <div class="modal-msg-box" id="modalMessage">–</div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-close" onclick="closeModalDirect()" style="padding: 9px 16px; width:auto; height:auto; font-size:13px;">Close</button>
+                <a href="#" id="modalReplyLink" class="modal-reply-btn">
+                    <i class="fa-solid fa-reply"></i> Reply via Email
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ── Sample data — replace with PHP json_encode output ──
+        const messages = [
+            { id: 1, name: 'Rahul Sharma',  number: '9876543210', email: 'rahul@example.com',  message: 'Interested in the villa listing. Can I schedule a visit this weekend?', created_at: '2024-03-01 10:30', read: false },
+            { id: 2, name: 'Priya Patel',   number: '9123456780', email: 'priya@example.com',  message: 'Please share more details about the apartment — floor plan and amenities.', created_at: '2024-03-02 14:15', read: true  },
+            { id: 3, name: 'Amit Verma',    number: '9988776655', email: 'amit@example.com',   message: 'Is the studio flat still available? What is the final negotiated price?', created_at: '2024-03-03 09:00', read: false },
+            { id: 4, name: 'Neha Singh',    number: '9001122334', email: 'neha@example.com',   message: 'Looking for a 3BHK in Mumbai within 80 lakhs budget.', created_at: '2024-03-04 11:45', read: true  },
+            { id: 5, name: 'Suresh Kumar',  number: '9871234560', email: 'suresh@example.com', message: 'What is the total area of the villa and are utilities included?', created_at: '2024-03-05 16:20', read: false },
+        ];
+
+        function getInitials(name) {
+            return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+        }
+
+        function renderTable(data) {
+            const tbody   = document.getElementById('tableBody');
+            const empty   = document.getElementById('emptyState');
+            const total   = data.length;
+            const unread  = data.filter(m => !m.read).length;
+            const read    = total - unread;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('statTotal').textContent  = messages.length;
+            document.getElementById('statRead').textContent   = messages.filter(m=>m.read).length;
+            document.getElementById('statUnread').textContent = messages.filter(m=>!m.read).length;
+
+            if (total === 0) {
+                tbody.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            tbody.innerHTML = data.map(m => `
+                <tr>
+                    <td><div class="td-id">${m.id}</div></td>
+                    <td>
+                        <div class="sender-wrap">
+                            <div class="avatar">${getInitials(m.name)}</div>
+                            <span class="sender-name">
+                                ${!m.read ? '<span class="unread-dot"></span>' : ''}${m.name}
+                            </span>
+                        </div>
+                    </td>
+                    <td class="td-phone">${m.number}</td>
+                    <td><a class="td-email" href="mailto:${m.email}">${m.email}</a></td>
+                    <td class="td-msg" title="${m.message}" onclick="openModal(${m.id})">${m.message}</td>
+                    <td class="td-date">${m.created_at}</td>
+                    <td>
+                        <button class="reply-btn" onclick="openModal(${m.id})">
+                            <i class="fa-solid fa-eye"></i> View
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const q = this.value.toLowerCase();
+            const filtered = messages.filter(m =>
+                m.name.toLowerCase().includes(q) ||
+                m.email.toLowerCase().includes(q) ||
+                m.message.toLowerCase().includes(q) ||
+                m.number.includes(q)
+            );
+            renderTable(filtered);
+        });
+
+        // Modal
+        function openModal(id) {
+            const m = messages.find(msg => msg.id === id);
+            if (!m) return;
+            m.read = true;
+            document.getElementById('modalName').textContent    = m.name;
+            document.getElementById('modalPhone').textContent   = m.number;
+            document.getElementById('modalEmail').textContent   = m.email;
+            document.getElementById('modalDate').textContent    = m.created_at;
+            document.getElementById('modalMessage').textContent = m.message;
+            document.getElementById('modalReplyLink').href      = `mailto:${m.email}?subject=Re: Your Enquiry&body=Dear ${m.name},%0D%0A%0D%0A`;
+            document.getElementById('modalOverlay').classList.add('open');
+            renderTable(messages);
+        }
+
+        function closeModal(e) {
+            if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+        }
+
+        function closeModalDirect() {
+            document.getElementById('modalOverlay').classList.remove('open');
+        }
+
+        // Toast
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'circle-xmark'}"></i> ${message}`;
+            toast.className = `toast ${type}`;
+            setTimeout(() => toast.className = 'toast', 3000);
+        }
+
+        // Init
+        renderTable(messages);
+
+        // URL param toasts
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('sent') === '1') showToast('Reply sent successfully!', 'success');
+    </script>
+ <script>
+    (function(){
+        const token = localStorage.getItem('bp_token');
+        const user  = JSON.parse(localStorage.getItem('bp_user') || 'null');
+        if (!token || !user) { window.location.href = 'login.html'; return; }
+        document.addEventListener('DOMContentLoaded', function(){
+            const name = user.name ? user.name.split(' ')[0] : 'Admin';
+            document.querySelectorAll('.admin-name').forEach(el => el.textContent = name);
+        });
+    })();
+    function bpLogout(){ localStorage.removeItem('bp_token'); localStorage.removeItem('bp_user'); window.location.href = 'login.html'; }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Property</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --primary: #4f7ef8;
+            --primary-dark: #2d55e0;
+            --primary-light: #eef3ff;
+            --white: #ffffff;
+            --text-dark: #1a1f36;
+            --text-muted: #7a7f9a;
+            --border: #e4e8f0;
+            --bg: #fafcff;
+            --shadow-sm: 0 2px 12px rgba(79,126,248,0.08);
+            --shadow-md: 0 8px 32px rgba(79,126,248,0.14);
+            --radius: 14px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+        }
+        .toast.success { background: #2ecc71; color: #fff; }
+        .toast.error   { background: #e74c3c; color: #fff; }
+        @keyframes slideIn { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:translateX(0); } }
+
+        /* Page layout */
+        .post-page {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+        }
+
+        /* Back button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 32px;
+            transition: gap 0.2s;
+        }
+        .back-btn:hover { gap: 12px; }
+        .back-btn i { font-size: 13px; }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 36px;
+        }
+        .post-header .label {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 5px 14px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+        .post-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            color: var(--text-dark);
+            line-height: 1.2;
+        }
+        .post-header h1 span { color: var(--primary); }
+        .post-header p {
+            margin-top: 10px;
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        /* Form card */
+        .post-form {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+        }
+
+        /* Section title inside form */
+        .form-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin: 28px 0 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-section-title:first-of-type { margin-top: 0; }
+        .form-section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* Grid layouts */
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* Input group */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .input-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        /* Inputs */
+        .post-form input[type="text"],
+        .post-form input[type="number"],
+        .post-form textarea,
+        .post-form select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            background: var(--bg);
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+        .post-form input:focus,
+        .post-form textarea:focus,
+        .post-form select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79,126,248,0.10);
+            background: var(--white);
+        }
+        .post-form textarea {
+            resize: vertical;
+            min-height: 110px;
+        }
+        .post-form select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a7f9a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+        }
+
+        /* File upload */
+        .custom-file-upload {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1.5px dashed var(--primary);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            background: var(--primary-light);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .custom-file-upload:hover { background: #dde8ff; }
+        .custom-file-upload input[type="file"] { display: none; }
+        .upload-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--primary);
+            color: var(--white);
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .file-name {
+            font-size: 13px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Submit button */
+        .form-btn {
+            width: 100%;
+            margin-top: 28px;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius);
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .form-btn:hover {
+            opacity: 0.92;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(79,126,248,0.30);
+        }
+        .form-btn:active { transform: translateY(0); }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .post-form { padding: 24px 18px; }
+            .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
+            .post-header h1 { font-size: 26px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toast (shown via JS) -->
+    <!-- <div class="toast success">Property posted successfully!</div> -->
+
+    <div class="post-page">
+
+        <a href="index.html" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i> Back to Home
+        </a>
+
+        <div class="post-header">
+            <span class="label">List with us</span>
+            <h1>Post Your <span>Property</span> Here</h1>
+            <p>Fill in the details below and we'll get your property listed in minutes.</p>
+        </div>
+
+        <form action="#" method="post" class="post-form" enctype="multipart/form-data">
+
+            <!-- Basic Info -->
+            <div class="form-section-title"><i class="fa-solid fa-house"></i> Basic Info</div>
+            <div class="input-group" style="margin-bottom:16px">
+                <label>Property Name</label>
+                <input type="text" name="name" placeholder="e.g. Sea View Apartment" required>
+            </div>
+            <div class="input-group" style="margin-bottom:16px">
+                <label>Description</label>
+                <textarea name="description" placeholder="Describe your property..." required></textarea>
+            </div>
+
+            <!-- Location -->
+            <div class="form-section-title"><i class="fa-solid fa-location-dot"></i> Location</div>
+            <div class="form-grid-2" style="margin-bottom:16px">
+                <div class="input-group">
+                    <label>Location / Area</label>
+                    <input type="text" name="location" placeholder="e.g. Kharghar, Sector 10" required>
+                </div>
+                <div class="input-group">
+                    <label>City</label>
+                    <input type="text" name="city" placeholder="e.g. Navi Mumbai" required>
+                </div>
+            </div>
+
+            <!-- Property Details -->
+            <div class="form-section-title"><i class="fa-solid fa-list"></i> Property Details</div>
+            <div class="form-grid-2" style="margin-bottom:16px">
+                <div class="input-group">
+                    <label>Listing Type</label>
+                    <select name="type" required>
+                        <option value="">Select Type</option>
+                        <option value="buy">For Buy</option>
+                        <option value="rent">For Rent</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Price (₹)</label>
+                    <input type="number" name="price" placeholder="e.g. 4500000" required>
+                </div>
+            </div>
+            <div class="form-grid-3" style="margin-bottom:16px">
+                <div class="input-group">
+                    <label>Rooms</label>
+                    <input type="number" name="rooms" placeholder="e.g. 3" required>
+                </div>
+                <div class="input-group">
+                    <label>Bathrooms</label>
+                    <input type="number" name="bathrooms" placeholder="e.g. 2" required>
+                </div>
+                <div class="input-group">
+                    <label>Area (sq ft)</label>
+                    <input type="number" name="area" placeholder="e.g. 1200">
+                </div>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="form-section-title"><i class="fa-solid fa-image"></i> Property Image</div>
+            <label class="custom-file-upload">
+                <input type="file" name="image" accept="image/*" required>
+                <span class="upload-button"><i class="fa-solid fa-upload"></i> Choose File</span>
+                <span class="file-name">No file chosen</span>
+            </label>
+
+            <button type="submit" name="submit" class="form-btn">
+                <i class="fa-solid fa-paper-plane"></i> Post Property
+            </button>
+
+        </form>
+    </div>
+
+    <script>
+        const fileInput = document.querySelector('input[type="file"]');
+        const fileNameDisplay = document.querySelector('.file-name');
+        fileInput.addEventListener('change', function () {
+            fileNameDisplay.textContent = this.files.length > 0 ? this.files[0].name : 'No file chosen';
+        });
+
+        // Auto-hide toasts
+        document.querySelectorAll('.toast').forEach(t => {
+            setTimeout(() => t.style.display = 'none', 3500);
+        });
+    </script>
+</body>
+</html>

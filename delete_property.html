@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Property – myProperty</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1B6CA8;
+            --primary-dark: #145a8e;
+            --primary-light: #e8f2fb;
+            --accent: #C8392B;
+            --accent-light: #fdf0ef;
+            --bg: #f0f4f8;
+            --sidebar-bg: #0d1b2a;
+            --sidebar-text: #a8bbd0;
+            --white: #ffffff;
+            --text-primary: #1a2332;
+            --text-secondary: #5a6a7a;
+            --text-muted: #8a9bac;
+            --border: #e2eaf2;
+            --card-shadow: 0 2px 16px rgba(27,108,168,0.08);
+            --radius: 14px;
+            --radius-sm: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 240px;
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            padding: 28px 0;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 24px 32px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .logo i { font-size: 22px; color: var(--primary); }
+
+        .logo span {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .menu {
+            list-style: none;
+            padding: 24px 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .menu li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .menu li a i { width: 18px; font-size: 15px; text-align: center; }
+        .menu li a:hover { background: rgba(27,108,168,0.18); color: #fff; }
+        .menu li.active a { background: var(--primary); color: #fff; }
+
+        .sidebar .logout {
+            margin: 0 14px 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            color: #e57373;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .sidebar .logout:hover { background: rgba(200,57,43,0.15); }
+
+        /* ── Main ── */
+        .main {
+            margin-left: 240px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-left h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-left p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        .header-right { display: flex; align-items: center; gap: 12px; }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px 6px 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--white);
+        }
+
+        .profile-avatar {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 14px;
+        }
+
+        .profile span { font-size: 13px; font-weight: 500; }
+
+        /* ── Content ── */
+        .content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 32px;
+        }
+
+        /* ── Confirm Card ── */
+        .confirm-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--card-shadow);
+            max-width: 460px;
+            width: 100%;
+            overflow: hidden;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        /* Red top strip */
+        .confirm-card-top {
+            background: var(--accent-light);
+            border-bottom: 1px solid #f5bdb8;
+            padding: 32px 36px 28px;
+            text-align: center;
+        }
+
+        .warning-icon-wrap {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #f5bdb8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px;
+        }
+
+        .warning-icon-wrap i {
+            font-size: 30px;
+            color: var(--accent);
+        }
+
+        .confirm-card-top h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .confirm-card-top p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Property info strip */
+        .property-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 36px;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .property-info .prop-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            background: var(--primary-light);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .property-info .prop-details p {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .property-info .prop-details small {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .prop-id-badge {
+            margin-left: auto;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--accent-light);
+            color: var(--accent);
+            border: 1px solid #f5bdb8;
+        }
+
+        /* Warning note */
+        .warning-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 20px 36px;
+            padding: 12px 14px;
+            background: #fffbea;
+            border: 1px solid #f5e49a;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: #7a5f00;
+            line-height: 1.5;
+        }
+
+        .warning-note i { color: #d4890a; margin-top: 1px; font-size: 14px; flex-shrink: 0; }
+
+        /* Buttons */
+        .confirm-card-footer {
+            padding: 20px 36px 28px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 11px 20px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+        }
+
+        .btn-cancel:hover { background: var(--bg); color: var(--text-primary); }
+
+        .btn-delete {
+            flex: 1;
+            padding: 11px 20px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            transition: background 0.2s;
+        }
+
+        .btn-delete:hover { background: #a82d21; }
+
+        .btn-delete.loading { opacity: 0.7; pointer-events: none; }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            padding: 14px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 999;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success { background: #e8f8f0; color: #1a9e5c; border: 1px solid #b2e8cc; display: flex; }
+        .toast.error   { background: var(--accent-light); color: var(--accent); border: 1px solid #f5bdb8; display: flex; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 60px; }
+            .sidebar .logo span,
+            .menu li a span,
+            .sidebar .logout span { display: none; }
+            .main { margin-left: 60px; }
+            .header { padding: 14px 16px; }
+            .content { padding: 24px 16px; }
+            .confirm-card-top,
+            .property-info,
+            .warning-note,
+            .confirm-card-footer { padding-left: 20px; padding-right: 20px; }
+            .warning-note { margin-left: 20px; margin-right: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-house-chimney"></i>
+            <span>myProperty</span>
+        </div>
+        <ul class="menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-grip"></i> <span>Dashboard</span></a></li>
+            <li><a href="add_properties.html"><i class="fa-solid fa-house-chimney-user"></i> <span>Add Properties</span></a></li>
+            <li class="active"><a href="manage_property.html"><i class="fa-solid fa-desktop"></i> <span>Manage Property</span></a></li>
+            <li><a href="latest_msg.html"><i class="fa-solid fa-message"></i> <span>Messages</span></a></li>
+        </ul>
+        <a href="#" class="logout"><i class="fa-solid fa-right-from-bracket"></i> <span>Log out</span></a>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                    <!-- Welcome text -->
+                    <p>Welcome back, <span class="admin-name">Admin</span></p>
+
+                <h2>Delete Property</h2>
+                <p>This action is permanent and cannot be undone</p>
+            </div>
+            <div class="header-right">
+                <a href="manage_property.html" class="back-btn">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Manage
+                </a>
+                <div class="profile">
+                    <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
+                    <span class="admin-name">Admin</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+
+            <div class="confirm-card">
+
+                <!-- Top -->
+                <div class="confirm-card-top">
+                    <div class="warning-icon-wrap">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <h2>Confirm Deletion</h2>
+                    <p>You are about to permanently delete this property and all its associated data.</p>
+                </div>
+
+                <!-- Property Info -->
+                <div class="property-info">
+                    <div class="prop-icon">
+                        <i class="fa-solid fa-house-chimney"></i>
+                    </div>
+                    <div class="prop-details">
+                        <p>Property Listing</p>
+                        <small>All images and details will be removed</small>
+                    </div>
+                    <span class="prop-id-badge" id="propIdBadge">ID: –</span>
+                </div>
+
+                <!-- Warning Note -->
+                <div class="warning-note">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>Once deleted, this property cannot be recovered. Any enquiries linked to this listing will also be affected.</span>
+                </div>
+
+                <!-- Buttons -->
+                <div class="confirm-card-footer">
+                    <a href="manage_property.html" class="btn-cancel">
+                        <i class="fa-solid fa-xmark"></i> Cancel
+                    </a>
+                    <button class="btn-delete" id="deleteBtn" onclick="deleteProperty()">
+                        <i class="fa-solid fa-trash"></i> Yes, Delete
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const propertyId = params.get('id');
+
+        // Show property ID in badge
+        document.getElementById('propIdBadge').textContent = propertyId ? `ID: ${propertyId}` : 'No ID';
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'circle-xmark'}"></i> ${message}`;
+            toast.className = `toast ${type}`;
+            setTimeout(() => {
+                toast.className = 'toast';
+                if (type === 'success') window.location.href = 'manage_property.html';
+            }, 2500);
+        }
+
+        function deleteProperty() {
+            if (!propertyId) {
+                showToast('No property ID found!', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('deleteBtn');
+            btn.classList.add('loading');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+
+            // ── Replace this with your actual fetch/API call ──
+            // fetch(`delete.php?id=${propertyId}`)
+            //   .then(res => res.json())
+            //   .then(data => {
+            //       if (data.success) showToast('Property deleted successfully!', 'success');
+            //       else showToast('Failed to delete property!', 'error');
+            //   });
+
+            // Simulated delay
+            setTimeout(() => {
+                showToast('Property deleted successfully!', 'success');
+            }, 1200);
+        }
+    </script>
+<script>
+    (function(){
+        const token = localStorage.getItem('bp_token');
+        const user  = JSON.parse(localStorage.getItem('bp_user') || 'null');
+        if (!token || !user) { window.location.href = 'login.html'; return; }
+        document.addEventListener('DOMContentLoaded', function(){
+            const name = user.name ? user.name.split(' ')[0] : 'Admin';
+            document.querySelectorAll('.admin-name').forEach(el => el.textContent = name);
+        });
+    })();
+    function bpLogout(){ localStorage.removeItem('bp_token'); localStorage.removeItem('bp_user'); window.location.href = 'login.html'; }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>myProperty — Find Your Dream Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+        <!-- ===== CHATBOT CSS ===== -->
+    <style>
+        /* Floating toggle button */
+        #chat-toggle-btn {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+            color: #fff;
+            border: none;
+            font-size: 26px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(13, 110, 253, 0.5);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.22s, box-shadow 0.22s;
+        }
+        #chat-toggle-btn:hover {
+            transform: scale(1.11);
+            box-shadow:0 6px 25px rgba(13, 110, 253, 0.7);
+        }
+        #chat-toggle-btn .notif {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #e74c3c;
+            color: #fff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        /* Chat window */
+        #chat-window {
+            position: fixed;
+            bottom: 106px;
+            right: 32px;
+            width: 360px;
+            height: 460px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 12px 55px rgba(0,0,0,0.16);
+            z-index: 9998;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+            animation: chatSlideUp 0.3s cubic-bezier(.4,0,.2,1);
+        }
+        #chat-window.open { display: flex; }
+
+        @keyframes chatSlideUp {
+            from { opacity: 0; transform: translateY(28px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Header */
+        .chat-header {
+            background:linear-gradient(135deg, #0d6efd, #0a58ca);
+            color: #fff;
+            padding: 15px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            border-bottom: 3px solid #0d6efd;
+        }
+        .chat-header .bot-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .chat-header .bot-info h6 {
+            margin: 0 0 2px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .chat-header .bot-info small {
+            font-size: 11px;
+        }
+        .online-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            margin-right: 4px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+        .chat-header .close-btn {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .chat-header .close-btn:hover { opacity: 1; }
+
+        /* Messages */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: #f5f5f0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+        .msg {
+            max-width: 83%;
+            padding: 10px 14px;
+            border-radius: 16px;
+            font-size: 13.5px;
+            line-height: 1.55;
+            word-break: break-word;
+            animation: msgFade 0.22s ease;
+        }
+        @keyframes msgFade {
+            from { opacity: 0; transform: translateY(7px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .msg.bot {
+            background: #fff;
+            color: #222;
+            border: 1px solid #e8e8e8;
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .msg.user {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+        }
+        .msg.bot .msg-sender {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #0d6efd;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        /* Typing dots */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 12px 16px;
+            background: #fff;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e8e8e8;
+            align-self: flex-start;
+            width: fit-content;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .typing-indicator span {
+            width: 7px;
+            height: 7px;
+            background: #0d6efd;
+            border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce {
+            0%,80%,100% { transform: translateY(0); }
+            40% { transform: translateY(-7px); }
+        }
+
+        /* Quick replies */
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 7px;
+        }
+        .qr-btn {
+            background: #fff;
+            border: 1.5px solid #0d6efd;
+            color: #0d6efd;
+            border-radius: 20px;
+            padding: 5px 13px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.18s;
+        }
+        .qr-btn:hover {
+            background: #0d6efd;
+            color: #fff;
+        }
+
+        /* Input area */
+        .chat-input-area {
+            padding: 12px 14px;
+            background: #fff;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .chat-input-area input {
+            flex: 1;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 25px;
+            padding: 9px 16px;
+            font-size: 13.5px;
+            outline: none;
+            transition: border-color 0.2s;
+            background: #fafafa;
+        }
+        .chat-input-area input:focus {
+            border-color: #0d6efd;
+            background: #fff;
+        }
+        .chat-input-area button {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+            color: #fff;
+            border: none;
+            font-size: 17px;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.18s;
+        }
+        .chat-input-area button:hover { transform: scale(1.08); }
+
+        .chat-footer-bar {
+            text-align: center;
+            font-size: 10.5px;
+            color: #bbb;
+            padding: 6px;
+            background: #fff;
+        }
+
+        /* Mobile */
+        @media (max-width: 480px) {
+            #chat-window {
+                width: calc(100vw - 20px);
+                right: 10px;
+                bottom: 90px;
+                height: 72vh;
+            }
+            #chat-toggle-btn { right: 14px; bottom: 14px; }
+        }
+
+
+        /* ============================================================
+           WHATSAPP BUTTON STYLES — Direct redirect, no popup
+           ============================================================ */
+        #wa-btn {
+            position: fixed;
+            bottom: 32px;
+            left: 32px;
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            color: #fff;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.55);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: transform 0.22s, box-shadow 0.22s;
+            animation: waPop 0.6s cubic-bezier(.34,1.56,.64,1) both;
+        }
+        @keyframes waPop {
+            from { opacity: 0; transform: scale(0.5); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        #wa-btn:hover {
+            transform: scale(1.12);
+            box-shadow: 0 6px 28px rgba(37, 211, 102, 0.7);
+        }
+        /* Green pulse ring */
+        #wa-btn::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(37, 211, 102, 0.35);
+            animation: waRing 2s ease-out infinite;
+        }
+        @keyframes waRing {
+            0%   { transform: scale(1);   opacity: 0.8; }
+            100% { transform: scale(1.7); opacity: 0; }
+        }
+      
+        /* Tooltip */
+    #wa-tooltip {
+        position: fixed;
+        bottom: 44px;
+        left: 104px;
+        background: #fff;
+        color: #111;
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 8px 14px;
+        border-radius: 50px;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.14);
+        white-space: nowrap;
+        z-index: 9997;
+        animation: tooltipFade 0.4s ease 1.2s both;
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+}
+#wa-tooltip::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 6px solid transparent;
+    border-right-color: #fff;
+}
+@keyframes tooltipFade {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+#wa-tooltip.hide { opacity: 0; pointer-events: none; }
+
+@media (max-width: 480px) {
+    #wa-btn     { left: 14px; bottom: 14px; }
+    #wa-tooltip { left: 86px; bottom: 42px; font-size: 12px; }
+} 
+    </style>
+    <!-- ===== END CHATBOT + WA CSS ===== -->
+    </head>
+        <!-- Tooltip -->
+        <div id="wa-tooltip">💬 Chat on WhatsApp</div>
+    </style>
+            
+
+</head>
+<body>
+
+    <!-- Scroll progress bar -->
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <!-- Header section -->
+    <header id="mainHeader">
+        <div class="logo">
+            <i class="fa-solid fa-house-chimney"></i>
+            <span>BhagwatiProperty</span>
+        </div>
+        <nav class="navbar" id="navList">
+            <a href="#home" class="nav-link">Home</a>
+            <a href="#servises" class="nav-link">Services</a>
+            <a href="#sell" class="nav-link">Buy</a>
+            <a href="#sell" class="nav-link">Rent</a>
+            <a href="post_property.html" class="nav-link">Postproperty</a>
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#contact" class="nav-link">Contact</a>
+            <a href="blogs.html" class="nav-link">Blogs</a>
+        </nav>
+        <div class="signUp" id="sign">
+            <a href="login.html" class="login">Login</a>
+        <button class="sign" onclick="window.location.href='login.html#register'">Register</button>
+        </div>
+        <i class="fa-solid fa-bars" id="menu"></i>
+       
+    </header>
+
+    <!-- Mobile nav overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <!-- Home section -->
+    <section class="home-section" id="home">
+        <div class="overlay"></div>
+        <!-- Floating particles -->
+        <div class="particles">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+        </div>
+        <div class="home-container">
+            <!-- <div class="badge-pill"><i class="fa-solid fa-star"></i> #1 Real Estate Platform in India</div> -->
+            <h1>Unlock the Door<br>To Your <em>Ideal Home</em></h1>
+            <p>Discover properties across India's most sought-after locations. Your dream home is just one click away.</p>
+            <div class="home-cta">
+                <a href="#sell" class="cta-primary">Explore Properties <i class="fa-solid fa-arrow-right"></i></a>
+                <a href="#contact" class="cta-secondary">Talk to Expert</a>
+            </div>
+        </div>
+
+        <!-- Stats bar -->
+        <!-- <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-number" data-target="1200">0</span><span>+</span>
+                <p>Properties Listed</p>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number" data-target="850">0</span><span>+</span>
+                <p>Happy Families</p>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number" data-target="25">0</span><span>+</span>
+                <p>Cities Covered</p>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number" data-target="10">0</span><span>+</span>
+                <p>Years Experience</p>
+            </div>
+        </div> -->
+
+        <div class="icons">
+            <div class="icon" title="Houses">
+                <i class="fa-regular fa-house"></i>
+                <span>Houses</span>
+            </div>
+            <div class="icon" title="Apartments">
+                <i class="fa-regular fa-building"></i>
+                <span>Apartments</span>
+            </div>
+            <div class="icon" title="Commercial">
+                <i class="fa-solid fa-city"></i>
+                <span>Commercial</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services section -->
+    <section class="services-section" id="servises">
+        <div class="services-container">
+            <div class="section-label">What We Offer</div>
+            <h1><span>Our </span>Services</h1>
+            <p class="section-sub">Everything you need to buy, sell or manage property — all under one roof.</p>
+            <div class="servise-boxes">
+                <div class="box1 service-card" data-aos="fade-up" data-delay="0">
+                    <div class="service-icon-wrap">
+                        <i class="fa-solid fa-house-lock"></i>
+                    </div>
+                    <h3>Property Insurance</h3>
+                    <p>Protect your investment with our comprehensive insurance plans tailored for every property type and budget.</p>
+                    <a href="#" class="service-link">Learn more <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="box service-card" data-aos="fade-up" data-delay="100">
+                    <div class="box-icon">
+                        <i class="fa-solid fa-credit-card"></i>
+                    </div>
+                    <h3>Easy Payment</h3>
+                    <p>Flexible EMI options, zero-cost loans and hassle-free payment solutions designed to fit your financial plan.</p>
+                    <a href="#" class="service-link">Learn more <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="box service-card" data-aos="fade-up" data-delay="200">
+                    <div class="box-icon">
+                        <i class="fa-solid fa-gears"></i>
+                    </div>
+                    <h3>Property Management</h3>
+                    <p>Full-service management from maintenance to tenant handling — we take care of it all so you don't have to.</p>
+                    <a href="#" class="service-link">Learn more <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sell section -->
+    <section class="sell-section" id="sell">
+        <div class="sell-container">
+            <div class="section-label">Browse Listings</div>
+            <h1>Best Collection <span>on Sell</span></h1>
+            <p>Handpicked properties across India's top cities.</p>
+
+            <!-- Filter tabs -->
+            <!-- <div class="filter-tabs">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="mumbai">Mumbai</button>
+                <button class="filter-btn" data-filter="pune">Pune</button>
+                <button class="filter-btn" data-filter="other">Other Cities</button>
+            </div> -->
+            <div class="filter-tabs">
+    <div class="filter-group">
+        <div class="dropdown">
+            <button class="filter-btn active" data-filter="all">All Locations <i class="fa-solid fa-chevron-down"></i></button>
+            <div class="dropdown-menu">
+                <span class="dropdown-label">Mumbai</span>
+                <a href="#" data-filter="kharghar">Kharghar</a>
+                <a href="#" data-filter="ulwe">Ulwe</a>
+                <a href="#" data-filter="vashi">Vashi</a>
+                <a href="#" data-filter="panvel">Panvel</a>
+                <span class="dropdown-label">Other Cities</span>
+                <a href="#" data-filter="nashik">Nashik</a>
+                <a href="#" data-filter="nagpur">Nagpur</a>
+                <a href="#" data-filter="pune">Pune</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="filter-btn">Budget <i class="fa-solid fa-chevron-down"></i></button>
+            <div class="dropdown-menu">
+                <a href="#" data-budget="50k-80k">₹50,000 – ₹80,000</a>
+                <a href="#" data-budget="1l-2l">₹1L – ₹2L</a>
+                <a href="#" data-budget="5l-10l">₹5L – ₹10L</a>
+                <a href="#" data-budget="1cr+">Above ₹1 Crore</a>
+            </div>
+        </div>
+        <div class="filter-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="filterSearch" placeholder="Search by name, city...">
+        </div>
+        <button class="search-btn">Search <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+</div>
+
+<div class="sell-box">
+
+    <!-- Property Card 1 -->
+<div class="box-content" data-city="mumbai">
+    <div class="img-wrapper">
+        <img src="./images1/card1.jpg" alt="Modern Family House">
+        <div class="img-overlay">
+            <a href="view.php?id=1" class="quick-view">Quick View</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="card-top">
+            <div class="box-sell"><span>For Sale</span></div>
+            <div class="price-tag">₹ 60,000/month</div>
+        </div>
+        <h2>Modern Family House</h2>
+        <p class="city-tag"><i class="fa-solid fa-location-dot"></i> Andheri West, Mumbai</p>
+        <div class="sell-feature">
+            <div class="sell-icon"><i class="fa-solid fa-bed"></i><span>3 Beds</span></div>
+            <div class="sell-icon"><i class="fa-solid fa-bath"></i><span>2 Baths</span></div>
+            <div class="sell-icon"><i class="fa-solid fa-ruler-combined"></i><span>1800 sqft</span></div>
+        </div>
+        <div class="card-actions">
+            <a href="view.php?id=1" class="view-btn">View Details <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="https://wa.me/919619525492?text=Hi!%20I%20am%20interested%20in%20the%20%22Modern%20Family%20House%22%20at%20Andheri%20West%2C%20Mumbai%20listed%20for%20%E2%82%B960%2C000%2Fmonth.%20Please%20share%20more%20details." target="_blank" rel="noopener noreferrer" class="wa-card-btn" title="Enquire on WhatsApp">
+                <i class="fa-brands fa-whatsapp"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Property Card 2 -->
+<div class="box-content" data-city="pune">
+    <div class="img-wrapper">
+        <img src="./images1/card2.jpg" alt="Luxury Apartment">
+        <div class="img-overlay">
+            <a href="view.php?id=2" class="quick-view">Quick View</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="card-top">
+            <div class="box-sell"><span>For Sale</span></div>
+            <div class="price-tag">₹ 85 L</div>
+        </div>
+        <h2>Luxury Apartment</h2>
+        <p class="city-tag"><i class="fa-solid fa-location-dot"></i> Koregaon Park, Pune</p>
+        <div class="sell-feature">
+            <div class="sell-icon"><i class="fa-solid fa-bed"></i><span>2 Beds</span></div>
+            <div class="sell-icon"><i class="fa-solid fa-bath"></i><span>1 Bath</span></div>
+            <div class="sell-icon"><i class="fa-solid fa-ruler-combined"></i><span>1100 sqft</span></div>
+        </div>
+        <div class="card-actions">
+            <a href="view.php?id=2" class="view-btn">View Details <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="https://wa.me/91916?text=Hi!%20I%20am%20interested%20in%20the%20%22Luxury%20Apartment%22%20at%20Koregaon%20Park%2C%20Pune%20listed%20for%20%E2%82%B985L.%20Please%20share%20more%20details." target="_blank" rel="noopener noreferrer" class="wa-card-btn" title="Enquire on WhatsApp">
+                <i class="fa-brands fa-whatsapp"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Property Card 3 -->
+<div class="box-content" data-city="other">
+    <div class="img-wrapper">
+        <img src="./images1/card3.jpg" alt="Cozy Studio Flat">
+        <div class="img-overlay">
+            <a href="view.php?id=3" class="quick-view">Quick View</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="card-top">
+            <div class="box-sell"><span>For Sale</span></div>
+            <div class="price-tag">₹ 42 L</div>
+        </div>
+        <h2>Cozy Studio Flat</h2>
+        <p class="city-tag"><i class="fa-solid fa-location-dot"></i> College Road, Nashik</p>
+        <div class="sell-feature">
+            <div class="sell-icon"><i class="fa-solid fa-bed"></i><span>1 Bed</span></div>
+            <div class="sell-icon"><i class="fa-solid fa-bath"></i><span>1 Bath</span></div>
+            <div class="sell-icon"><i class="fa-solid fa-ruler-combined"></i><span>600 sqft</span></div>
+        </div>
+        <div class="card-actions">
+            <a href="view.php?id=3" class="view-btn">View Details <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="https://wa.me/919619525492?text=Hi!%20I%20am%20interested%20in%20the%20%22Cozy%20Studio%20Flat%22%20at%20College%20Road%2C%20Nashik%20listed%20for%20%E2%82%B942L.%20Please%20share%20more%20details." target="_blank" rel="noopener noreferrer" class="wa-card-btn" title="Enquire on WhatsApp">
+                <i class="fa-brands fa-whatsapp"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Property Card 4 -->
+<div class="box-content" data-city="other">
+    <div class="img-wrapper">
+        <img src="./images1/card2.jpg" alt="3BHK FLAT">
+        <div class="img-overlay">
+            <a href="view.php?id=4" class="quick-view">Quick View</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="card-top">
+            <div class="box-sell"><span>For Sale</span></div>
+            <div class="price-tag">₹ 2L</div>
+        </div>
+        <h2>3BHK Flat</h2>
+        <p class="city-tag"><i class="fa-solid fa-location-dot"></i> Civil Lines, Nagpur</p>
+        <div class="sell-feature">
+            <div class="sell-icon"><i class="fa-solid fa-bed"></i><span>4 Beds</span></div>
+            <div class="sell-icon"><i class="fa-solid fa-bath"></i><span>3 Baths</span></div>
+            <div class="sell-icon"><i class="fa-solid fa-ruler-combined"></i><span>3200 sqft</span></div>
+        </div>
+        <div class="card-actions">
+            <a href="view.php?id=4" class="view-btn">View Details <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="https://wa.me/919619525492?text=Hi!%20I%20am%20interested%20in%20the%20%223BHK%20Flat%22%20at%20Civil%20Lines%2C%20Nagpur%20listed%20for%20%E2%82%B92L.%20Please%20share%20more%20details." target="_blank" rel="noopener noreferrer" class="wa-card-btn" title="Enquire on WhatsApp">
+                <i class="fa-brands fa-whatsapp"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Property Card 5 -->
+<div class="box-content" data-city="mumbai">
+    <div class="img-wrapper">
+        <img src="./images1/card3.jpg" alt="Urban Penthouse">
+        <div class="img-overlay">
+            <a href="view.php?id=5" class="quick-view">Quick View</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="card-top">
+            <div class="box-sell premium"><span>For Rent</span></div>
+            <div class="price-tag">₹ 5.8 Cr</div>
+        </div>
+        <h2>2BHK Flat</h2>
+        <p class="city-tag"><i class="fa-solid fa-location-dot"></i> Bandra, Mumbai</p>
+        <div class="sell-feature">
+            <div class="sell-icon"><i class="fa-solid fa-bed"></i><span>5 Beds</span></div>
+            <div class="sell-icon"><i class="fa-solid fa-bath"></i><span>4 Baths</span></div>
+            <div class="sell-icon"><i class="fa-solid fa-ruler-combined"></i><span>4500 sqft</span></div>
+        </div>
+        <div class="card-actions">
+            <a href="view.php?id=5" class="view-btn">View Details <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="https://wa.me/919619525492?text=Hi!%20I%20am%20interested%20in%20the%20%222BHK%20Flat%22%20at%20Bandra%2C%20Mumbai%20listed%20for%20%E2%82%B95.8%20Crore%20(For%20Rent).%20Please%20share%20more%20details." target="_blank" rel="noopener noreferrer" class="wa-card-btn" title="Enquire on WhatsApp">
+                <i class="fa-brands fa-whatsapp"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Property Card 6 -->
+<div class="box-content" data-city="other">
+    <div class="img-wrapper">
+        <img src="./images1/card1.jpg" alt="Garden Row House">
+        <div class="img-overlay">
+            <a href="view.php?id=6" class="quick-view">Quick View</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="card-top">
+            <div class="box-sell"><span>For Sale</span></div>
+            <div class="price-tag">₹ 7L</div>
+        </div>
+        <h2>Garden House</h2>
+        <p class="city-tag"><i class="fa-solid fa-location-dot"></i> CIDCO, Aurangabad</p>
+        <div class="sell-feature">
+            <div class="sell-icon"><i class="fa-solid fa-bed"></i><span>3 Beds</span></div>
+            <div class="sell-icon"><i class="fa-solid fa-bath"></i><span>2 Baths</span></div>
+            <div class="sell-icon"><i class="fa-solid fa-ruler-combined"></i><span>2100 sqft</span></div>
+        </div>
+        <div class="card-actions">
+            <a href="view.php?id=6" class="view-btn">View Details <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="https://wa.me/919619525492?text=Hi!%20I%20am%20interested%20in%20the%20%22Garden%20House%22%20at%20CIDCO%2C%20Aurangabad%20listed%20for%20%E2%82%B97L.%20Please%20share%20more%20details." target="_blank" rel="noopener noreferrer" class="wa-card-btn" title="Enquire on WhatsApp">
+                <i class="fa-brands fa-whatsapp"></i>
+            </a>
+        </div>
+    </div>
+</div>
+</section>
+
+    <!-- Features section -->
+    <section class="feactures" id="features">
+        <div class="feture-content">
+            <div class="heading">
+                <div>
+                    <div class="section-label">Highlights</div>
+                    <h1>Featured Properties</h1>
+                </div>
+                <a href="#" class="view-btn">View All <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <div class="feature-container">
+                <button class="prev" aria-label="Previous">
+                    <i class="fa-solid fa-angle-left"></i>
+                </button>
+                <div class="slider-track">
+                    <div class="slide">
+                        <div class="card-item">
+                            <div class="card-img-wrap">
+                                <img src="./images1/card1.jpg" alt="Property 1">
+                                <div class="card-badge">New</div>
+                            </div>
+                            <div class="card-info">
+                                <h2>Riverside Retreat</h2>
+                                <p>A serene riverside property with stunning views and modern amenities.</p>
+                                <div class="card-footer">
+                                    <span class="card-price">₹ 1.5 Cr</span>
+                                    <button class="btn">View <i class="fa-solid fa-arrow-right"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="card-item">
+                            <div class="card-img-wrap">
+                                <img src="./images1/card2.jpg" alt="Property 2">
+                                <div class="card-badge hot">Hot</div>
+                            </div>
+                            <div class="card-info">
+                                <h2>Sky Garden Villa</h2>
+                                <p>Exclusive rooftop garden villa with panoramic city skyline views.</p>
+                                <div class="card-footer">
+                                    <span class="card-price">₹ 3.2 Cr</span>
+                                    <button class="btn">View <i class="fa-solid fa-arrow-right"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="card-item">
+                            <div class="card-img-wrap">
+                                <img src="./images1/card3.jpg" alt="Property 3">
+                                <div class="card-badge">Featured</div>
+                            </div>
+                            <div class="card-info">
+                                <h2>Heritage Townhouse</h2>
+                                <p>Charming heritage-style townhouse blending classic and contemporary design.</p>
+                                <div class="card-footer">
+                                    <span class="card-price">₹ 95 L</span>
+                                    <button class="btn">View <i class="fa-solid fa-arrow-right"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="card-item">
+                            <div class="card-img-wrap">
+                                <img src="./images1/card1.jpg" alt="Property 4">
+                                <div class="card-badge">New</div>
+                            </div>
+                            <div class="card-info">
+                                <h2>Forest Edge Cottage</h2>
+                                <p>A peaceful cottage nestled at the forest edge, perfect for a quiet lifestyle.</p>
+                                <div class="card-footer">
+                                    <span class="card-price">₹ 62 L</span>
+                                    <button class="btn">View <i class="fa-solid fa-arrow-right"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="card-item">
+                            <div class="card-img-wrap">
+                                <img src="./images1/card2.jpg" alt="Property 5">
+                            </div>
+                            <div class="card-info">
+                                <h2>Lakeview Duplex</h2>
+                                <p>Breathtaking lake-facing duplex with a private terrace and infinity pool.</p>
+                                <div class="card-footer">
+                                    <span class="card-price">₹ 2.8 Cr</span>
+                                    <button class="btn">View <i class="fa-solid fa-arrow-right"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="card-item">
+                            <div class="card-img-wrap">
+                                <img src="./images1/card3.jpg" alt="Property 6">
+                                <div class="card-badge hot">Hot</div>
+                            </div>
+                            <div class="card-info">
+                                <h2>Zen Minimal Studio</h2>
+                                <p>A thoughtfully designed minimal studio for modern urban professionals.</p>
+                                <div class="card-footer">
+                                    <span class="card-price">₹ 55 L</span>
+                                    <button class="btn">View <i class="fa-solid fa-arrow-right"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="next" aria-label="Next">
+                    <i class="fa-solid fa-angle-right"></i>
+                </button>
+            </div>
+            <!-- Slider dots -->
+            <div class="slider-dots" id="sliderDots"></div>
+        </div>
+    </section>
+
+    <!-- Testimonials section -->
+    <section class="testimonials-section">
+        <div class="testi-container">
+            <div class="section-label">What Clients Say</div>
+            <h1>Trusted by <span>Thousands</span></h1>
+            <div class="testi-grid">
+                <div class="testi-card">
+                    <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    <p>"Found our dream home in just 2 weeks! The team was incredibly supportive throughout the entire process."</p>
+                    <div class="testi-author">
+                        <div class="avatar">R</div>
+                        <div><strong>Riya Sharma</strong><span>Mumbai</span></div>
+                    </div>
+                </div>
+                <div class="testi-card featured-testi">
+                    <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    <p>"Best real estate platform I've used. Transparent pricing, great listings, and the expert consultation was priceless."</p>
+                    <div class="testi-author">
+                        <div class="avatar">A</div>
+                        <div><strong>Arjun Mehta</strong><span>Pune</span></div>
+                    </div>
+                </div>
+                <div class="testi-card">
+                    <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i></div>
+                    <p>"Sold my property at a great price with zero hassle. Highly recommend BhagwatiProperty to anyone looking to sell."</p>
+                    <div class="testi-author">
+                        <div class="avatar">P</div>
+                        <div><strong>Priya Desai</strong><span>Nagpur</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact section -->
+    <section class="contact-section" id="contact">
+        <div class="overlay"></div>
+        <div class="contact-container">
+            <div class="contact-left">
+                <div class="section-label light">Get In Touch</div>
+                <h1>Need consultation?</h1>
+                <h2>Contact us, we are ready to help.</h2>
+                <div class="info">
+                    <h3>Contact Details</h3>
+                    <p><i class="fa-solid fa-location-dot"></i> Mumbai, Maharashtra, India</p>
+                    <p><i class="fa-solid fa-phone"></i> +91 1234567890</p>
+                    <p><i class="fa-solid fa-envelope"></i> bhagwatiproperty@gmail.com</p>
+                </div>
+                <div class="social">
+                    <h3>Follow Us</h3>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon"><i class="fa-brands fa-square-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+           <div class="contact-form">
+    <div class="form-header">
+        <h2>Send a Message</h2>
+        <p>We'll get back to you within 24 hours.</p>
+    </div>
+
+    <form id="contactForm">
+        <div class="input-group">
+            <i class="fa-solid fa-user"></i>
+            <input type="text" name="name" placeholder="Your Name" required>
+        </div>
+
+        <div class="input-group">
+            <i class="fa-solid fa-envelope"></i>
+            <input type="email" name="email" placeholder="Your Email Address" required>
+        </div>
+
+        <div class="input-group">
+            <i class="fa-solid fa-phone"></i>
+            <input type="number" name="phone" placeholder="Your Phone Number" required>
+        </div>
+
+        <div class="input-group textarea-group">
+            <i class="fa-solid fa-message"></i>
+            <textarea name="message" rows="5" placeholder="Your message here..." required></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn">
+            Send Message <i class="fa-solid fa-paper-plane"></i>
+        </button>
+    </form>
+</div>
+
+<script>
+document.getElementById("contactForm").addEventListener("submit", async function(e) {
+    e.preventDefault(); // stop page reload
+
+    const formData = {
+        name: document.querySelector("input[name='name']").value,
+        email: document.querySelector("input[name='email']").value,
+        phone: document.querySelector("input[name='phone']").value,
+        message: document.querySelector("textarea[name='message']").value
+    };
+
+    try {
+        const response = await fetch("http://localhost:5000/api/enquiry", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const result = await response.text();
+        alert(result);
+
+    } catch (error) {
+        console.error(error);
+        alert("Error sending data");
+    }
+});
+</script>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-top">
+            <div class="logo">
+                <i class="fa-solid fa-house-chimney"></i>
+                <span>BhagwatiProperty</span>
+            </div>
+            <p class="footer-tagline">Your trusted partner in finding the perfect home.</p>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 <span>BhagwatiProperty</span> | Designed by <span>TechKraftiers Digital</span></p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Use</a>
+                <a href="#">Sitemap</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to top button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">
+        <i class="fa-solid fa-chevron-up"></i>
+    </button>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="script.js"></script>
+    <script>
+    // ---- Scroll Progress ----
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.body.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        document.getElementById('scrollProgress').style.width = progress + '%';
+
+        // Header shrink
+        const header = document.getElementById('mainHeader');
+        header.classList.toggle('scrolled', scrollTop > 80);
+
+        // Back to top
+        document.getElementById('backToTop').classList.toggle('visible', scrollTop > 400);
+    });
+
+    // ---- Back to top ----
+    document.getElementById('backToTop').addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ---- Mobile menu ----
+    const menuBtn = document.getElementById('menu');
+    const navList = document.getElementById('navList');
+    const signDiv = document.getElementById('sign');
+    const overlay = document.getElementById('mobileOverlay');
+
+    menuBtn.addEventListener('click', () => {
+        navList.classList.toggle('active-link');
+        signDiv.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+    overlay.addEventListener('click', () => {
+        navList.classList.remove('active-link');
+        signDiv.classList.remove('active');
+        overlay.classList.remove('active');
+    });
+
+    // Close mobile menu on nav link click
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            navList.classList.remove('active-link');
+            signDiv.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+    });
+
+    // ---- Active nav link on scroll ----
+    const sections = document.querySelectorAll('section[id]');
+    window.addEventListener('scroll', () => {
+        const scrollY = window.scrollY + 120;
+        sections.forEach(sec => {
+            if (scrollY >= sec.offsetTop && scrollY < sec.offsetTop + sec.offsetHeight) {
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                const link = document.querySelector(`.nav-link[href="#${sec.id}"]`);
+                if (link) link.classList.add('active');
+            }
+        });
+    });
+
+    // ---- Stats counter animation ----
+    const counters = document.querySelectorAll('.stat-number');
+    let counted = false;
+    const runCounters = () => {
+        if (counted) return;
+        const statsBar = document.querySelector('.stats-bar');
+        if (!statsBar) return;
+        const rect = statsBar.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 50) {
+            counted = true;
+            counters.forEach(counter => {
+                const target = +counter.dataset.target;
+                let current = 0;
+                const step = Math.ceil(target / 60);
+                const timer = setInterval(() => {
+                    current += step;
+                    if (current >= target) { counter.textContent = target; clearInterval(timer); }
+                    else counter.textContent = current;
+                }, 25);
+            });
+        }
+    };
+    window.addEventListener('scroll', runCounters);
+    runCounters();
+
+    // ---- Property Filter Tabs ----
+    const sellBox = document.querySelector('.sell-box');
+
+    // Build empty-state element
+    const emptyState = document.createElement('div');
+    emptyState.className = 'filter-empty';
+    emptyState.innerHTML = `<i class="fa-solid fa-house-circle-xmark"></i>
+        <h3>No properties found</h3>
+        <p>Try a different filter to explore more listings.</p>`;
+    sellBox.after(emptyState);
+
+    // Add result count badge
+    const resultCount = document.createElement('div');
+    resultCount.className = 'result-count';
+    document.querySelector('.filter-tabs').after(resultCount);
+
+    const applyFilter = (filter) => {
+        const cards = document.querySelectorAll('.box-content');
+        let visible = 0;
+
+        cards.forEach((card, i) => {
+            const city = card.dataset.city;
+            const match = filter === 'all' || city === filter;
+
+            card.classList.remove('card-hide', 'card-show');
+
+            if (match) {
+                card.classList.add('card-show');
+                card.style.animationDelay = (visible * 80) + 'ms';
+                visible++;
+            } else {
+                card.classList.add('card-hide');
+            }
+        });
+
+        // Update count badge
+        resultCount.textContent = visible === 0 ? '' :
+            `Showing ${visible} propert${visible === 1 ? 'y' : 'ies'}`;
+
+        // Toggle empty state
+        emptyState.classList.toggle('visible', visible === 0);
+    };
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            applyFilter(btn.dataset.filter);
+        });
+    });
+
+    // Run on load to set initial count
+    applyFilter('all');
+
+    // ---- Slider ----
+    const track = document.querySelector('.slider-track');
+    const slides = document.querySelectorAll('.slide');
+    const dotsContainer = document.getElementById('sliderDots');
+    let currentIndex = 0;
+
+    const getSlidesVisible = () => window.innerWidth <= 768 ? 1 : window.innerWidth <= 992 ? 2 : 3;
+
+    // Create dots
+    const totalDots = () => slides.length - getSlidesVisible() + 1;
+    const buildDots = () => {
+        dotsContainer.innerHTML = '';
+        for (let i = 0; i < Math.max(1, totalDots()); i++) {
+            const dot = document.createElement('span');
+            dot.classList.add('dot');
+            if (i === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => goTo(i));
+            dotsContainer.appendChild(dot);
+        }
+    };
+    buildDots();
+
+    const goTo = (index) => {
+        const max = Math.max(0, slides.length - getSlidesVisible());
+        currentIndex = Math.max(0, Math.min(index, max));
+        const slideW = slides[0].offsetWidth + parseInt(getComputedStyle(track).gap || 16);
+        track.style.transform = `translateX(-${currentIndex * slideW}px)`;
+        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentIndex));
+    };
+
+    document.querySelector('.prev').addEventListener('click', () => goTo(currentIndex - 1));
+    document.querySelector('.next').addEventListener('click', () => goTo(currentIndex + 1));
+    window.addEventListener('resize', () => { buildDots(); goTo(0); });
+
+    // ---- Scroll reveal (simple IntersectionObserver) ----
+    const revealEls = document.querySelectorAll('[data-aos]');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                const delay = e.target.dataset.delay || 0;
+                setTimeout(() => e.target.classList.add('aos-animate'), delay);
+                observer.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    revealEls.forEach(el => observer.observe(el));
+    </script>
+       <!-- ============================================================
+         myProperty CHATBOT WIDGET (right side)
+         ============================================================ -->
+    <button id="chat-toggle-btn" onclick="toggleChat()" title="Chat with myProperty">
+        <i class="fa-solid fa-comments" id="chat-icon"></i>
+        <span class="notif" id="chat-notif">1</span>
+    </button>
+
+    <div id="chat-window">
+        <div class="chat-header">
+            <div class="bot-avatar">🏠</div>
+            <div class="bot-info">
+                <h6>myProperty Assistant</h6>
+                <small><span class="online-dot"></span>Online · Always here to help</small>
+            </div>
+            <button class="close-btn" onclick="toggleChat()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div id="onboard-progress" style="background:#1a2a4a; padding:6px 18px 10px; flex-shrink:0;">
+            <div id="progress-label" style="font-size:10px; color:#0d6efd; font-weight:600; letter-spacing:0.5px; margin-bottom:4px;">Step 1 of 5 — Name</div>
+            <div style="background:#dde; border-radius:10px; height:5px; width:100%;">
+                <div id="progress-fill" style="height:5px; border-radius:10px; background:linear-gradient(90deg,#0d6efd,#0a58ca); width:20%; transition:width 0.4s ease;"></div>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages"></div>
+
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ask about property, rent, sell…"
+                   onkeydown="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+        <div class="chat-footer-bar">🏡 Powered by myProperty AI</div>
+    </div>
+
+
+    <!-- ============================================================
+         WHATSAPP BUTTON — Direct redirect, no popup
+         ============================================================ -->
+    <a id="wa-btn"
+       href="https://wa.me/919619525492?text=Hi!%20I%20found%20you%20on%20myProperty%20website.%20I'm%20interested%20in%20a%20property.%20Please%20share%20more%20details."
+       target="_blank"
+       rel="noopener noreferrer"
+       title="Chat with us on WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+
+    <!-- ===== CHATBOT JAVASCRIPT ===== -->
+    <script>
+        const BOT_RULES = [
+            {
+                keywords: ['hello', 'hi', 'hey', 'hii', 'namaste', 'good morning', 'good evening', 'howdy'],
+                response: "👋 Welcome to <b>myProperty</b>! I'm your personal property assistant. How can I help you find your dream home today?",
+                quickReplies: ["Buy a property", "Rent a property", "Sell my property", "Property insurance", "Contact agent"]
+            },
+            {
+                keywords: ['buy', 'purchase', 'buying', 'want to buy', 'looking to buy'],
+                response: "🏡 Great choice! We have excellent properties available for sale across Mumbai, Maharashtra and surrounding areas. Our listings include:<br><ul style='margin:6px 0 0 16px;padding:0'><li>Independent Houses</li><li>Apartments & Flats</li><li>Villas & Bungalows</li><li>Commercial Properties</li></ul>Would you like to explore our current listings?",
+                quickReplies: ["View listings", "Budget under ₹50L", "Budget under ₹1Cr", "Contact agent"]
+            },
+            {
+                keywords: ['rent', 'rental', 'renting', 'tenant', 'for rent', 'lease'],
+                response: "🏢 Looking to rent? We have a wide variety of rental properties! Prices vary by location and property type. Our rental properties include fully furnished, semi-furnished and unfurnished options.",
+                quickReplies: ["1 BHK rent", "2 BHK rent", "3 BHK rent", "Contact agent"]
+            },
+            {
+                keywords: ['sell', 'selling', 'want to sell', 'list my property', 'my property'],
+                response: "📋 Want to sell your property? <b>myProperty</b> makes it simple!<br><ul style='margin:6px 0 0 16px;padding:0'><li>Free property listing</li><li>Expert valuation</li><li>Verified buyer network</li><li>End-to-end documentation support</li></ul>Contact our team to get started!",
+                quickReplies: ["Get free valuation", "Talk to an agent", "Contact us"]
+            },
+            {
+                keywords: ['insurance', 'property insurance', 'insure', 'protection'],
+                response: "🏠🔒 Our <b>Property Insurance</b> service protects your investment! Coverage includes:<br><ul style='margin:6px 0 0 16px;padding:0'><li>Structural damage protection</li><li>Natural disaster coverage</li><li>Theft & burglary protection</li><li>Third-party liability</li></ul>Contact us for a free insurance quote.",
+                quickReplies: ["Get insurance quote", "Contact agent", "Our services"]
+            },
+            {
+                keywords: ['payment', 'pay', 'emi', 'loan', 'home loan', 'finance', 'easy payment'],
+                response: "💳 We offer <b>Easy Payment</b> options including:<br><ul style='margin:6px 0 0 16px;padding:0'><li>Home loan assistance</li><li>EMI calculator support</li><li>Bank tie-ups for best rates</li><li>Down payment flexibility</li></ul>Our finance team will guide you through the entire process!",
+                quickReplies: ["Calculate EMI", "Loan assistance", "Contact agent"]
+            },
+            {
+                keywords: ['price', 'cost', 'how much', 'rate', 'budget', 'affordable', 'cheap'],
+                response: "💰 Our property prices vary based on location, size and amenities. To give you accurate pricing:<br><ul style='margin:6px 0 0 16px;padding:0'><li>Apartments start from <b>₹30 Lakh</b></li><li>Independent houses from <b>₹80 Lakh</b></li><li>Villas from <b>₹1.5 Crore</b></li></ul>Let our agent give you a personalized quote!",
+                quickReplies: ["Under ₹50 Lakh", "Under ₹1 Crore", "Above ₹1 Crore", "Contact agent"]
+            },
+            {
+                keywords: ['1 bhk', 'one bhk', '1bhk'],
+                response: "🛏️ <b>1 BHK Properties</b> — Perfect for singles and couples!<br><br>📍 Available in Mumbai, Navi Mumbai & Thane<br>💰 Price Range: ₹25L – ₹55L (Buy) | ₹8,000 – ₹18,000/month (Rent)<br><br>Our agent can shortlist the best options for you!",
+                quickReplies: ["Schedule a visit", "Contact agent", "2 BHK options"]
+            },
+            {
+                keywords: ['2 bhk', 'two bhk', '2bhk'],
+                response: "🛏️🛏️ <b>2 BHK Properties</b> — Ideal for small families!<br><br>📍 Available in Mumbai, Navi Mumbai & Thane<br>💰 Price Range: ₹45L – ₹90L (Buy) | ₹14,000 – ₹28,000/month (Rent)<br><br>Schedule a visit to find your perfect 2 BHK!",
+                quickReplies: ["Schedule a visit", "Contact agent", "3 BHK options"]
+            },
+            {
+                keywords: ['3 bhk', 'three bhk', '3bhk', 'villa', 'bungalow'],
+                response: "🏡 <b>3 BHK / Villa / Bungalow</b> — Spacious living for families!<br><br>📍 Premium locations in Mumbai, Lonavala & Pune<br>💰 Price Range: ₹80L – ₹3Cr (Buy) | ₹25,000 – ₹60,000/month (Rent)<br><br>Let us help you find your dream home!",
+                quickReplies: ["Schedule a visit", "Contact agent", "View all listings"]
+            },
+            {
+                keywords: ['location', 'area', 'mumbai', 'navi mumbai', 'thane', 'pune', 'where'],
+                response: "📍 We operate in prime locations including:<br><ul style='margin:6px 0 0 16px;padding:0'><li><b>Mumbai</b> – Andheri, Bandra, Powai, Dadar</li><li><b>Navi Mumbai</b> – CBD Belapur, Vashi, Kharghar</li><li><b>Thane</b> – Ghodbunder Road, Majiwada</li><li><b>Pune</b> – Hinjewadi, Wakad, Kothrud</li></ul>",
+                quickReplies: ["Properties in Mumbai", "Properties in Pune", "Contact agent"]
+            },
+            {
+                keywords: ['visit', 'schedule', 'site visit', 'appointment', 'book visit'],
+                response: "📅 We'd love to arrange a site visit for you! Our agents are available <b>Monday – Saturday, 9 AM – 7 PM</b>.<br><br>📞 Call: <b>+91 1234567890</b><br>📧 Email: <b>myProperty@gmail.com</b><br><br>Or use our Contact form to book!",
+                quickReplies: ["Go to contact form", "Call us now", "WhatsApp us"]
+            },
+            {
+                keywords: ['contact', 'agent', 'help', 'support', 'talk', 'call', 'phone', 'consult'],
+                response: "📞 Our expert property consultants are ready to help!<br><br><b>📱 Phone:</b> +91 1234567890<br><b>📧 Email:</b> myProperty@gmail.com<br><b>📍 Address:</b> Mumbai, Maharashtra<br><b>🕐 Hours:</b> Mon–Sat, 9 AM – 7 PM<br><br>You can also use our <a href='#' style='color:#c8902a'>Contact Form</a> below!",
+                quickReplies: ["Schedule a visit", "Send a message", "Our services"]
+            },
+            {
+                keywords: ['service', 'services', 'what do you offer', 'what you do', 'offer'],
+                response: "🏢 <b>myProperty</b> offers a complete real estate experience:<br><ul style='margin:6px 0 0 16px;padding:0'><li>🔑 <b>Buy</b> – Verified properties at best prices</li><li>🏡 <b>Sell</b> – Reach 1000s of buyers</li><li>🏠 <b>Rent</b> – Find your rental home</li><li>🔒 <b>Insurance</b> – Protect your property</li><li>💳 <b>Easy Payment</b> – Home loan assistance</li></ul>",
+                quickReplies: ["Buy property", "Rent property", "Sell property", "Contact agent"]
+            },
+            {
+                keywords: ['document', 'registration', 'paperwork', 'legal', 'agreement'],
+                response: "📄 <b>Documentation Support</b> — We handle all the paperwork for you!<br><ul style='margin:6px 0 0 16px;padding:0'><li>Sale deed & registration</li><li>Khata & encumbrance certificate</li><li>RERA registration verification</li><li>Loan document processing</li></ul>Our legal team ensures 100% safe transactions.",
+                quickReplies: ["Contact legal team", "Talk to agent"]
+            },
+            {
+                keywords: ['rera', 'registered', 'verified', 'safe', 'trust', 'authentic'],
+                response: "✅ All properties listed on <b>myProperty</b> are <b>RERA registered</b> and fully verified. We ensure:<br><ul style='margin:6px 0 0 16px;padding:0'><li>Clear title & ownership</li><li>No hidden charges</li><li>100% legal compliance</li><li>Transparent transactions</li></ul>Your investment is completely safe with us!",
+                quickReplies: ["Browse properties", "Contact agent"]
+            },
+            {
+                keywords: ['whatsapp', 'wp', 'watsapp', 'wa'],
+                response: "💬 You can reach us directly on <b>WhatsApp</b>! Click the green WhatsApp button on the bottom-left corner of this page to chat with our team instantly. 📲",
+                quickReplies: ["Contact agent", "Our services"]
+            },
+            {
+                keywords: ['thank', 'thanks', 'thank you', 'awesome', 'great', 'wonderful', 'helpful'],
+                response: "😊 You're most welcome! It's our pleasure to help you find your perfect property. Is there anything else I can assist you with?",
+                quickReplies: ["Browse properties", "Contact agent", "Our services"]
+            },
+            {
+                keywords: ['bye', 'goodbye', 'see you', 'ok bye', 'no thanks', "that's all"],
+                response: "👋 Thank you for visiting <b>myProperty</b>! We hope to help you find your dream home soon. Have a wonderful day! 🏡",
+                quickReplies: []
+            }
+        ];
+
+        const DEFAULT_REPLY = {
+            response: "🤔 I'm not sure about that, but our expert agents can definitely help! Here's what I can assist you with:",
+            quickReplies: ["Buy a property", "Rent a property", "Sell my property", "Contact agent", "Our services"]
+        };
+
+        let isOpen = false;
+        let isTyping = false;
+        const messagesEl = document.getElementById('chat-messages');
+
+        let userInfo = { name:'', email:'', location:'', budget:'', propertyType:'', step:'idle' };
+
+        const STEPS = {
+            ask_name:          { label: 'Step 1 of 5 — Name',          width: '20%'  },
+            ask_email:         { label: 'Step 2 of 5 — Email',         width: '40%'  },
+            ask_location:      { label: 'Step 3 of 5 — Location',      width: '60%'  },
+            ask_budget:        { label: 'Step 4 of 5 — Budget',        width: '80%'  },
+            ask_property_type: { label: 'Step 5 of 5 — Property Type', width: '100%' },
+            done:              { label: 'All set! ✅',                  width: '100%' }
+        };
+
+        function updateProgress(step) {
+            const s = STEPS[step];
+            if (!s) return;
+            document.getElementById('progress-label').textContent = s.label;
+            document.getElementById('progress-fill').style.width   = s.width;
+        }
+
+        function handleOnboarding(input) {
+            if (userInfo.step === 'ask_name') {
+                userInfo.name  = input;
+                userInfo.step  = 'ask_email';
+                updateProgress('ask_email');
+                addBotMessage(`Nice to meet you, <b>${userInfo.name}</b>! 😊<br><br>Could you please share your <b>Email ID</b>?`, []);
+                return true;
+            }
+            if (userInfo.step === 'ask_email') {
+                userInfo.email = input;
+                userInfo.step  = 'ask_location';
+                updateProgress('ask_location');
+                addBotMessage(`Got it! 📧 <b>${userInfo.email}</b><br><br>Which <b>city / location</b> are you looking for a property in?<br><i style="font-size:12px;color:#888">e.g. Mumbai, Pune, Navi Mumbai…</i>`, []);
+                return true;
+            }
+            if (userInfo.step === 'ask_location') {
+                userInfo.location = input;
+                userInfo.step     = 'ask_budget';
+                updateProgress('ask_budget');
+                addBotMessage(`Great choice! 📍 <b>${userInfo.location}</b><br><br>What is your <b>budget range</b>? Please select one below 👇`,
+                    ["5L – 10L", "10L – 20L", "20L – 35L", "35L – 50L", "Above 50L"]);
+                return true;
+            }
+            if (userInfo.step === 'ask_budget') {
+                userInfo.budget = input;
+                userInfo.step   = 'ask_property_type';
+                updateProgress('ask_property_type');
+                addBotMessage(`Budget noted 💰 <b>${userInfo.budget}</b><br><br>What type of <b>property</b> are you interested in? Please select one below 👇`,
+                    ["🏢 Flat", "🏬 Apartment", "🏡 Villa", "🌳 Plot / Land"]);
+                return true;
+            }
+            if (userInfo.step === 'ask_property_type') {
+                userInfo.propertyType = input;
+                userInfo.step         = 'done';
+                updateProgress('done');
+                document.getElementById('onboard-progress').style.display = 'none';
+                document.getElementById('chat-input').placeholder = 'Ask about property, rent, sell…';
+                addBotMessage(
+                    `✅ Thank you, <b>${userInfo.name}</b>! Our agent will contact you shortly. 😊<br><br>How can I help you today?`,
+                    ["Buy a property", "Rent a property", "Sell my property", "Contact agent"]);
+                return true;
+            }
+            return false;
+        }
+
+        function toggleChat() {
+            isOpen = !isOpen;
+            const win  = document.getElementById('chat-window');
+            const icon = document.getElementById('chat-icon');
+            const notif = document.getElementById('chat-notif');
+
+            if (isOpen) {
+                win.classList.add('open');
+                icon.className = 'fa-solid fa-xmark';
+                notif.style.display = 'none';
+                messagesEl.innerHTML = '';
+                userInfo = { name:'', email:'', location:'', budget:'', propertyType:'', step:'ask_name' };
+                document.getElementById('onboard-progress').style.display = 'block';
+                updateProgress('ask_name');
+                document.getElementById('chat-input').placeholder = 'Type your answer here…';
+                setTimeout(() => addBotMessage(
+                    "🏡 Welcome to <b>myProperty</b>! I'm your personal property assistant.<br><br>Before we begin, may I know your <b>name</b> please? 😊",
+                    []
+                ), 450);
+                scrollToBottom();
+            } else {
+                win.classList.remove('open');
+                icon.className = 'fa-solid fa-comments';
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text || isTyping) return;
+            input.value = '';
+            addUserMessage(text);
+            showTyping();
+            setTimeout(() => {
+                removeTyping();
+                if (userInfo.step !== 'done' && userInfo.step !== 'idle') {
+                    handleOnboarding(text);
+                    return;
+                }
+                const reply = getReply(text.toLowerCase());
+                addBotMessage(reply.response, reply.quickReplies);
+            }, 900 + Math.random() * 400);
+        }
+
+        function getReply(input) {
+            for (const rule of BOT_RULES) {
+                if (rule.keywords.some(kw => input.includes(kw))) return rule;
+            }
+            return DEFAULT_REPLY;
+        }
+
+        function addUserMessage(text) {
+            const div = document.createElement('div');
+            div.className = 'msg user';
+            div.textContent = text;
+            messagesEl.appendChild(div);
+            scrollToBottom();
+        }
+
+        function addBotMessage(html, quickReplies = []) {
+            const div = document.createElement('div');
+            div.className = 'msg bot';
+            div.innerHTML = `<div class="msg-sender">myProperty Assistant</div>${html}`;
+            if (quickReplies.length > 0) {
+                const qr = document.createElement('div');
+                qr.className = 'quick-replies';
+                quickReplies.forEach(label => {
+                    const btn = document.createElement('button');
+                    btn.className = 'qr-btn';
+                    btn.textContent = label;
+                    btn.onclick = () => {
+                        document.getElementById('chat-input').value = label;
+                        sendMessage();
+                    };
+                    qr.appendChild(btn);
+                });
+                div.appendChild(qr);
+            }
+            messagesEl.appendChild(div);
+            scrollToBottom();
+        }
+
+        function showTyping() {
+            isTyping = true;
+            const div = document.createElement('div');
+            div.className = 'typing-indicator';
+            div.id = 'typing-dots';
+            div.innerHTML = '<span></span><span></span><span></span>';
+            messagesEl.appendChild(div);
+            scrollToBottom();
+        }
+
+        function removeTyping() {
+            isTyping = false;
+            const el = document.getElementById('typing-dots');
+            if (el) el.remove();
+        }
+
+        function scrollToBottom() {
+            setTimeout(() => { messagesEl.scrollTop = messagesEl.scrollHeight; }, 50);
+        }
+
+        /* Auto open chatbot after 5 seconds */
+        window.addEventListener('load', function () {
+            setTimeout(() => { if (!isOpen) toggleChat(); }, 5000);
+        });
+    </script>
+<script src="auth-guard.js"></script>
+</body>
+</html>

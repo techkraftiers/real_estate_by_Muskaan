@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Properties – myProperty</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1B6CA8;
+            --primary-dark: #145a8e;
+            --primary-light: #e8f2fb;
+            --accent: #C8392B;
+            --accent-light: #fdf0ef;
+            --bg: #f0f4f8;
+            --sidebar-bg: #0d1b2a;
+            --sidebar-text: #a8bbd0;
+            --white: #ffffff;
+            --text-primary: #1a2332;
+            --text-secondary: #5a6a7a;
+            --text-muted: #8a9bac;
+            --border: #e2eaf2;
+            --card-shadow: 0 2px 16px rgba(27,108,168,0.08);
+            --radius: 14px;
+            --radius-sm: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 240px;
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            padding: 28px 0;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 24px 32px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .logo i { font-size: 22px; color: var(--primary); }
+
+        .logo span {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .menu {
+            list-style: none;
+            padding: 24px 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .menu li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .menu li a i { width: 18px; font-size: 15px; text-align: center; }
+        .menu li a:hover { background: rgba(27,108,168,0.18); color: #fff; }
+        .menu li.active a { background: var(--primary); color: #fff; }
+
+        .sidebar .logout {
+            margin: 0 14px 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            color: #e57373;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .sidebar .logout:hover { background: rgba(200,57,43,0.15); }
+
+        /* ── Main ── */
+        .main {
+            margin-left: 240px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-left h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-left p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        .header-right { display: flex; align-items: center; gap: 12px; }
+
+        .add-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .add-btn:hover { background: var(--primary-dark); }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px 6px 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--white);
+        }
+
+        .profile-avatar {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 14px;
+        }
+
+        .profile span { font-size: 13px; font-weight: 500; }
+
+        /* ── Content ── */
+        .content { padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; }
+
+        /* ── Toolbar ── */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-filter {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            width: 240px;
+        }
+
+        .search-input-wrap i { color: var(--text-muted); font-size: 13px; }
+
+        .search-input-wrap input {
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            color: var(--text-primary);
+            outline: none;
+            width: 100%;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .search-input-wrap input::placeholder { color: var(--text-muted); }
+
+        .filter-select {
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-primary);
+            background: var(--white);
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Cpolyline points='4,6 8,10 12,6' fill='none' stroke='%238a9bac' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 30px;
+        }
+
+        .total-badge {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .total-badge span {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* ── Table Card ── */
+        .table-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .table-wrap { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            min-width: 900px;
+        }
+
+        thead tr {
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        thead th {
+            padding: 13px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: var(--primary-light); }
+
+        tbody td {
+            padding: 13px 16px;
+            color: var(--text-primary);
+            vertical-align: middle;
+        }
+
+        /* ID badge */
+        .td-id {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        /* Image */
+        .prop-img {
+            width: 72px; height: 52px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            display: block;
+        }
+
+        .img-fallback {
+            width: 72px; height: 52px;
+            border-radius: 8px;
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .td-name { font-weight: 600; color: var(--text-primary); }
+
+        .td-desc {
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .td-price {
+            font-weight: 600;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        /* Type tag */
+        .tag {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        .tag.buy  { background: var(--primary-light); color: var(--primary); }
+        .tag.rent { background: #e8f8f0; color: #1a9e5c; }
+        .tag.sell { background: var(--accent-light); color: var(--accent); }
+
+        /* Action buttons */
+        .action-wrap { display: flex; align-items: center; gap: 8px; }
+
+        .action-btn {
+            width: 34px; height: 34px;
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+        }
+
+        .action-btn.edit {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: #c2dcf2;
+        }
+
+        .action-btn.edit:hover { background: var(--primary); color: #fff; }
+
+        .action-btn.delete {
+            background: var(--accent-light);
+            color: var(--accent);
+            border-color: #f5bdb8;
+        }
+
+        .action-btn.delete:hover { background: var(--accent); color: #fff; }
+
+        /* Empty state */
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-state i { font-size: 40px; margin-bottom: 14px; color: var(--border); display: block; }
+        .empty-state p { font-size: 15px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+        .empty-state small { font-size: 13px; }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            padding: 14px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 999;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        .toast.success { background: #e8f8f0; color: #1a9e5c; border: 1px solid #b2e8cc; display: flex; }
+        .toast.error   { background: var(--accent-light); color: var(--accent); border: 1px solid #f5bdb8; display: flex; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 60px; }
+            .sidebar .logo span,
+            .menu li a span,
+            .sidebar .logout span { display: none; }
+            .main { margin-left: 60px; }
+            .header { padding: 14px 16px; }
+            .content { padding: 20px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-house-chimney"></i>
+            <span>myProperty</span>
+        </div>
+        <ul class="menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-grip"></i> <span>Dashboard</span></a></li>
+            <li><a href="add_properties.html"><i class="fa-solid fa-house-chimney-user"></i> <span>Add Properties</span></a></li>
+            <li class="active"><a href="manage_property.html"><i class="fa-solid fa-desktop"></i> <span>Manage Property</span></a></li>
+            <li><a href="latest_msg.html"><i class="fa-solid fa-message"></i> <span>Messages</span></a></li>
+        </ul>
+            <!-- Logout button -->
+        <a href="#" class="logout" onclick="bpLogout(); return false;"><i class="fa-solid fa-right-from-bracket"></i> <span>Log out</span></a>    
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <!-- Welcome text -->
+                <p>Welcome back, <span class="admin-name">Admin</span></p>
+                <h2>Manage Properties</h2>
+                <p>View, edit and delete your property listings</p>
+            </div>
+            <div class="header-right">
+                <a href="add_properties.html" class="add-btn">
+                    <i class="fa-solid fa-plus"></i> Add Property
+                </a>
+                <div class="profile">
+                    <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
+                    <!-- Profile name top right -->
+                    <span class="admin-name">Admin</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="search-filter">
+                    <div class="search-input-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Search properties...">
+                    </div>
+                    <select class="filter-select" id="typeFilter">
+                        <option value="">All Types</option>
+                        <option value="buy">Buy</option>
+                        <option value="rent">Rent</option>
+                        <option value="sell">Sell</option>
+                    </select>
+                    <select class="filter-select" id="cityFilter">
+                        <option value="">All Cities</option>
+                        <option value="mumbai">Mumbai</option>
+                        <option value="pune">Pune</option>
+                        <option value="nashik">Nashik</option>
+                        <option value="nagpur">Nagpur</option>
+                        <option value="bangalore">Bangalore</option>
+                    </select>
+                </div>
+                <div class="total-badge">Total: <span id="totalCount">0</span> properties</div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-card">
+                <div class="table-wrap">
+                    <table id="propertyTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Image</th>
+                                <th>Property Name</th>
+                                <th>Description</th>
+                                <th>Location</th>
+                                <th>City</th>
+                                <th>Type</th>
+                                <th>Rooms</th>
+                                <th>Baths</th>
+                                <th>Area</th>
+                                <th>Price (₹)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Rows injected by JS or PHP -->
+                        </tbody>
+                    </table>
+
+                    <!-- Empty state shown when no rows -->
+                    <div class="empty-state" id="emptyState" style="display:none">
+                        <i class="fa-solid fa-house-circle-xmark"></i>
+                        <p>No properties found</p>
+                        <small>Try adjusting your search or filters</small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ── Sample data — replace with your PHP fetch or API call ──
+        const properties = [
+            { id: 1, image: '../uploads/property1.jpg', name: 'Luxury Villa', description: 'Spacious villa with garden and pool', location: 'Bandra West', city: 'Mumbai', type: 'buy', rooms: 4, bathrooms: 3, area: 2400, price: '1,20,00,000' },
+            { id: 2, image: '../uploads/property2.jpg', name: 'Modern Apartment', description: '2BHK near IT park with gym access', location: 'Hinjewadi', city: 'Pune', type: 'rent', rooms: 2, bathrooms: 2, area: 950, price: '45,000/mo' },
+            { id: 3, image: '../uploads/property3.jpg', name: 'Studio Flat', description: 'Compact studio ideal for singles', location: 'Koramangala', city: 'Bangalore', type: 'buy', rooms: 1, bathrooms: 1, area: 480, price: '80,00,000' },
+            { id: 4, image: '', name: 'Family House', description: '3BHK independent house with parking', location: 'Kharghar', city: 'Nagpur', type: 'sell', rooms: 3, bathrooms: 2, area: 1600, price: '65,00,000' },
+        ];
+
+        const typeColors = { buy: 'buy', rent: 'rent', sell: 'sell' };
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            const empty = document.getElementById('emptyState');
+            document.getElementById('totalCount').textContent = data.length;
+
+            if (data.length === 0) {
+                tbody.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            tbody.innerHTML = data.map(p => `
+                <tr data-type="${p.type}" data-city="${p.city.toLowerCase()}">
+                    <td><div class="td-id">${p.id}</div></td>
+                    <td>
+                        ${p.image
+                            ? `<img class="prop-img" src="${p.image}" alt="${p.name}"
+                                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                            : ''}
+                        <div class="img-fallback" ${p.image ? 'style="display:none"' : ''}>
+                            <i class="fa-solid fa-house"></i>
+                        </div>
+                    </td>
+                    <td class="td-name">${p.name}</td>
+                    <td class="td-desc" title="${p.description}">${p.description}</td>
+                    <td>${p.location}</td>
+                    <td>${p.city}</td>
+                    <td><span class="tag ${typeColors[p.type] || ''}">${p.type}</span></td>
+                    <td>${p.rooms}</td>
+                    <td>${p.bathrooms}</td>
+                    <td>${p.area} sq ft</td>
+                    <td class="td-price">₹${p.price}</td>
+                    <td>
+                        <div class="action-wrap">
+                            <a href="update_property.html?id=${p.id}" class="action-btn edit" title="Edit">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            <a href="delete_property.html?id=${p.id}" class="action-btn delete" title="Delete">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterTable() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const type = document.getElementById('typeFilter').value.toLowerCase();
+            const city = document.getElementById('cityFilter').value.toLowerCase();
+
+            const filtered = properties.filter(p => {
+                const matchQ = !q || p.name.toLowerCase().includes(q) || p.location.toLowerCase().includes(q) || p.description.toLowerCase().includes(q);
+                const matchType = !type || p.type === type;
+                const matchCity = !city || p.city.toLowerCase() === city;
+                return matchQ && matchType && matchCity;
+            });
+
+            renderTable(filtered);
+        }
+
+        // Toast
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'circle-xmark'}"></i> ${message}`;
+            toast.className = `toast ${type}`;
+            setTimeout(() => toast.className = 'toast', 3000);
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', filterTable);
+        document.getElementById('typeFilter').addEventListener('change', filterTable);
+        document.getElementById('cityFilter').addEventListener('change', filterTable);
+
+        // Initial render
+        renderTable(properties);
+
+        // Show toast from URL param (e.g. after delete redirect)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('deleted') === '1') showToast('Property deleted successfully!', 'success');
+        if (urlParams.get('added') === '1')   showToast('Property added successfully!', 'success');
+    </script>
+    <script>
+    (function(){
+        const token = localStorage.getItem('bp_token');
+        const user  = JSON.parse(localStorage.getItem('bp_user') || 'null');
+        if (!token || !user) { window.location.href = 'login.html'; return; }
+        document.addEventListener('DOMContentLoaded', function(){
+            const name = user.name ? user.name.split(' ')[0] : 'Admin';
+            document.querySelectorAll('.admin-name').forEach(el => el.textContent = name);
+        });
+    })();
+    function bpLogout(){ localStorage.removeItem('bp_token'); localStorage.removeItem('bp_user'); window.location.href = 'login.html'; }
+</script>
+
+</body>
+</html>

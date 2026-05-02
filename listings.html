@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Listings – myProperty</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1B6CA8;
+            --primary-dark: #145a8e;
+            --primary-light: #e8f2fb;
+            --accent: #C8392B;
+            --accent-light: #fdf0ef;
+            --bg: #f0f4f8;
+            --sidebar-bg: #0d1b2a;
+            --sidebar-text: #a8bbd0;
+            --white: #ffffff;
+            --text-primary: #1a2332;
+            --text-secondary: #5a6a7a;
+            --text-muted: #8a9bac;
+            --border: #e2eaf2;
+            --card-shadow: 0 2px 16px rgba(27,108,168,0.08);
+            --radius: 14px;
+            --radius-sm: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 240px;
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            padding: 28px 0;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 24px 32px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .logo i { font-size: 22px; color: var(--primary); }
+
+        .logo span {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .menu {
+            list-style: none;
+            padding: 24px 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .menu li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .menu li a i { width: 18px; font-size: 15px; text-align: center; }
+        .menu li a:hover { background: rgba(27,108,168,0.18); color: #fff; }
+        .menu li.active a { background: var(--primary); color: #fff; }
+
+        .sidebar .logout {
+            margin: 0 14px 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            color: #e57373;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .sidebar .logout:hover { background: rgba(200,57,43,0.15); }
+
+        /* ── Main ── */
+        .main {
+            margin-left: 240px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-left h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-left p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        .header-right { display: flex; align-items: center; gap: 12px; }
+
+        .manage-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .manage-btn:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .add-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .add-btn:hover { background: var(--primary-dark); }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px 6px 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--white);
+        }
+
+        .profile-avatar {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 14px;
+        }
+
+        .profile span { font-size: 13px; font-weight: 500; }
+
+        /* ── Content ── */
+        .content { padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; }
+
+        /* ── Toolbar ── */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filters {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            width: 230px;
+        }
+
+        .search-input-wrap i { color: var(--text-muted); font-size: 13px; }
+
+        .search-input-wrap input {
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            color: var(--text-primary);
+            outline: none;
+            width: 100%;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .search-input-wrap input::placeholder { color: var(--text-muted); }
+
+        .filter-select {
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-primary);
+            background: var(--white);
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Cpolyline points='4,6 8,10 12,6' fill='none' stroke='%238a9bac' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 30px;
+        }
+
+        /* View toggle */
+        .view-toggle {
+            display: flex;
+            gap: 4px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+        }
+
+        .view-btn {
+            width: 32px; height: 32px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            transition: all 0.15s;
+        }
+
+        .view-btn.active { background: var(--primary-light); color: var(--primary); }
+
+        .total-badge { font-size: 13px; color: var(--text-muted); }
+        .total-badge span { font-weight: 600; color: var(--text-primary); }
+
+        /* ── Grid View ── */
+        .listing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .listing-grid.two-col { grid-template-columns: repeat(2, 1fr); }
+
+        /* ── Card ── */
+        .prop-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: fadeUp 0.4s ease both;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .prop-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 32px rgba(27,108,168,0.15);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 190px;
+            overflow: hidden;
+            background: var(--primary-light);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .card-img img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s;
+            display: block;
+        }
+
+        .prop-card:hover .card-img img { transform: scale(1.05); }
+
+        .card-img .img-placeholder {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 42px;
+            color: var(--primary);
+            opacity: 0.35;
+        }
+
+        /* Tag on image */
+        .card-tag {
+            position: absolute;
+            top: 12px; left: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.3px;
+            text-transform: capitalize;
+        }
+
+        .card-tag.buy  { background: var(--primary); color: #fff; }
+        .card-tag.rent { background: #1a9e5c; color: #fff; }
+        .card-tag.sell { background: var(--accent); color: #fff; }
+
+        /* Featured badge */
+        .featured-badge {
+            position: absolute;
+            top: 12px; right: 12px;
+            background: #d4890a;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .card-body {
+            padding: 16px 18px 18px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .card-body h2 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .card-location {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 14px;
+        }
+
+        .card-location i { color: var(--accent); font-size: 11px; }
+
+        /* Stats row */
+        .card-stats {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 10px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 14px;
+        }
+
+        .card-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .card-stat i { color: var(--text-muted); font-size: 11px; }
+
+        /* Footer */
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+        }
+
+        .card-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .card-price i { font-size: 13px; }
+
+        .card-actions { display: flex; gap: 8px; }
+
+        .action-btn {
+            width: 32px; height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+        }
+
+        .action-btn.edit { background: var(--primary-light); color: var(--primary); border-color: #c2dcf2; }
+        .action-btn.edit:hover { background: var(--primary); color: #fff; }
+        .action-btn.delete { background: var(--accent-light); color: var(--accent); border-color: #f5bdb8; }
+        .action-btn.delete:hover { background: var(--accent); color: #fff; }
+
+        /* ── List View ── */
+        .listing-list { display: flex; flex-direction: column; gap: 12px; }
+
+        .list-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+            gap: 0;
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .list-card:hover { box-shadow: 0 6px 24px rgba(27,108,168,0.12); }
+
+        .list-img {
+            width: 130px;
+            height: 95px;
+            flex-shrink: 0;
+            overflow: hidden;
+            background: var(--primary-light);
+            position: relative;
+        }
+
+        .list-img img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .list-img .img-placeholder {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+            color: var(--primary);
+            opacity: 0.35;
+        }
+
+        .list-body {
+            flex: 1;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .list-info { flex: 1; min-width: 140px; }
+
+        .list-info h2 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .list-info span { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+        .list-info span i { color: var(--accent); font-size: 10px; }
+
+        .list-tag {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: capitalize;
+            flex-shrink: 0;
+        }
+
+        .list-tag.buy  { background: var(--primary-light); color: var(--primary); }
+        .list-tag.rent { background: #e8f8f0; color: #1a9e5c; }
+        .list-tag.sell { background: var(--accent-light); color: var(--accent); }
+
+        .list-price {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .list-actions { display: flex; gap: 8px; padding-right: 16px; flex-shrink: 0; }
+
+        /* ── Empty State ── */
+        .empty-state {
+            padding: 80px 20px;
+            text-align: center;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .empty-state i { font-size: 44px; color: var(--border); margin-bottom: 16px; display: block; }
+        .empty-state p { font-size: 16px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+        .empty-state small { font-size: 13px; color: var(--text-muted); }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1100px) {
+            .listing-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 60px; }
+            .sidebar .logo span,
+            .menu li a span,
+            .sidebar .logout span { display: none; }
+            .main { margin-left: 60px; }
+            .header { padding: 14px 16px; }
+            .content { padding: 20px 16px; }
+            .listing-grid { grid-template-columns: 1fr; }
+            .list-img { width: 90px; height: 75px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-house-chimney"></i>
+            <span>myProperty</span>
+        </div>
+        <ul class="menu">
+            <li class="active"><a href="dashboard.html"><i class="fa-solid fa-grip"></i> <span>Dashboard</span></a></li>
+            <li><a href="add_properties.html"><i class="fa-solid fa-house-chimney-user"></i> <span>Add Properties</span></a></li>
+            <li><a href="manage_property.html"><i class="fa-solid fa-desktop"></i> <span>Manage Property</span></a></li>
+            <li><a href="latest_msg.html"><i class="fa-solid fa-message"></i> <span>Messages</span></a></li>
+        </ul>
+        <a href="#" class="logout"><i class="fa-solid fa-right-from-bracket"></i> <span>Log out</span></a>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                    <!-- Welcome text -->
+                    <p>Welcome back, <span class="admin-name">Admin</span></p>
+                <h2>Top Listings</h2>
+                <p>All active property listings</p>
+            </div>
+            <div class="header-right">
+                <a href="manage_property.html" class="manage-btn">
+                    <i class="fa-solid fa-desktop"></i> Manage
+                </a>
+                <a href="add_properties.html" class="add-btn">
+                    <i class="fa-solid fa-plus"></i> Add Property
+                </a>
+                <div class="profile">
+                    <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
+                    <span class="admin-name">Admin</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="filters">
+                    <div class="search-input-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Search by name or location...">
+                    </div>
+                    <select class="filter-select" id="typeFilter">
+                        <option value="">All Types</option>
+                        <option value="buy">Buy</option>
+                        <option value="rent">Rent</option>
+                        <option value="sell">Sell</option>
+                    </select>
+                    <select class="filter-select" id="cityFilter">
+                        <option value="">All Cities</option>
+                        <option value="mumbai">Mumbai</option>
+                        <option value="pune">Pune</option>
+                        <option value="nashik">Nashik</option>
+                        <option value="nagpur">Nagpur</option>
+                        <option value="bangalore">Bangalore</option>
+                    </select>
+                    <select class="filter-select" id="sortFilter">
+                        <option value="">Sort By</option>
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                        <option value="name">Name A–Z</option>
+                    </select>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="total-badge">Total: <span id="totalCount">0</span></div>
+                    <div class="view-toggle">
+                        <button class="view-btn active" id="gridBtn" onclick="setView('grid')" title="Grid view">
+                            <i class="fa-solid fa-grip"></i>
+                        </button>
+                        <button class="view-btn" id="listBtn" onclick="setView('list')" title="List view">
+                            <i class="fa-solid fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listings Output -->
+            <div id="listingsOutput"></div>
+
+        </div>
+    </div>
+
+    <script>
+        // ── Sample data — replace with PHP json_encode ──
+        const properties = [
+            { id: 1, image: '../uploads/property1.jpg', name: 'Luxury Villa',      location: 'Bandra West', city: 'mumbai',    type: 'buy',  rooms: 4, bathrooms: 3, area: 2400, price: 12000000, featured: true  },
+            { id: 2, image: '../uploads/property2.jpg', name: 'Modern Apartment',  location: 'Hinjewadi',   city: 'pune',      type: 'rent', rooms: 2, bathrooms: 2, area: 950,  price: 45000,    featured: false },
+            { id: 3, image: '../uploads/property3.jpg', name: 'Studio Flat',       location: 'Koramangala', city: 'bangalore', type: 'buy',  rooms: 1, bathrooms: 1, area: 480,  price: 8000000,  featured: false },
+            { id: 4, image: '',                         name: 'Family House',      location: 'Kharghar',    city: 'mumbai',    type: 'sell', rooms: 3, bathrooms: 2, area: 1600, price: 6500000,  featured: true  },
+            { id: 5, image: '',                         name: 'Cozy Studio Flat',  location: 'Ulwe',        city: 'nagpur',    type: 'rent', rooms: 1, bathrooms: 1, area: 420,  price: 18000,    featured: false },
+            { id: 6, image: '',                         name: 'Sea View Penthouse',location: 'Marine Lines', city: 'mumbai',   type: 'buy',  rooms: 5, bathrooms: 4, area: 3200, price: 35000000, featured: true  },
+        ];
+
+        let currentView = 'grid';
+
+        function formatPrice(p) {
+            if (p >= 10000000) return '₹' + (p/10000000).toFixed(2) + ' Cr';
+            if (p >= 100000)   return '₹' + (p/100000).toFixed(2) + ' L';
+            return '₹' + p.toLocaleString('en-IN');
+        }
+
+        function setView(v) {
+            currentView = v;
+            document.getElementById('gridBtn').classList.toggle('active', v === 'grid');
+            document.getElementById('listBtn').classList.toggle('active', v === 'list');
+            renderListings(getFiltered());
+        }
+
+        function getFiltered() {
+            const q    = document.getElementById('searchInput').value.toLowerCase();
+            const type = document.getElementById('typeFilter').value;
+            const city = document.getElementById('cityFilter').value;
+            const sort = document.getElementById('sortFilter').value;
+
+            let data = properties.filter(p => {
+                const matchQ    = !q    || p.name.toLowerCase().includes(q) || p.location.toLowerCase().includes(q);
+                const matchType = !type || p.type === type;
+                const matchCity = !city || p.city === city;
+                return matchQ && matchType && matchCity;
+            });
+
+            if (sort === 'price-asc')  data.sort((a,b) => a.price - b.price);
+            if (sort === 'price-desc') data.sort((a,b) => b.price - a.price);
+            if (sort === 'name')       data.sort((a,b) => a.name.localeCompare(b.name));
+
+            return data;
+        }
+
+        function imgOrPlaceholder(img, icon='fa-house') {
+            if (img) {
+                return `<img src="${img}" alt="property"
+                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <div class="img-placeholder" style="display:none"><i class="fa-solid ${icon}"></i></div>`;
+            }
+            return `<div class="img-placeholder"><i class="fa-solid ${icon}"></i></div>`;
+        }
+
+        function renderListings(data) {
+            document.getElementById('totalCount').textContent = data.length;
+            const out = document.getElementById('listingsOutput');
+
+            if (data.length === 0) {
+                out.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-house-circle-xmark"></i>
+                        <p>No properties found</p>
+                        <small>Try adjusting your search or filters</small>
+                    </div>`;
+                return;
+            }
+
+            if (currentView === 'grid') {
+                out.innerHTML = `<div class="listing-grid" id="grid">
+                    ${data.map((p, i) => `
+                        <div class="prop-card" style="animation-delay:${i * 0.06}s">
+                            <div class="card-img">
+                                ${imgOrPlaceholder(p.image)}
+                                <span class="card-tag ${p.type}">${p.type}</span>
+                                ${p.featured ? '<span class="featured-badge"><i class="fa-solid fa-star"></i> Featured</span>' : ''}
+                            </div>
+                            <div class="card-body">
+                                <h2>${p.name}</h2>
+                                <p class="card-location"><i class="fa-solid fa-location-dot"></i> ${p.location}, ${p.city.charAt(0).toUpperCase()+p.city.slice(1)}</p>
+                                <div class="card-stats">
+                                    <div class="card-stat"><i class="fa-solid fa-bed"></i> ${p.rooms} Rooms</div>
+                                    <div class="card-stat"><i class="fa-solid fa-bath"></i> ${p.bathrooms} Baths</div>
+                                    <div class="card-stat"><i class="fa-solid fa-vector-square"></i> ${p.area} sq ft</div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="card-price"><i class="fa-solid fa-indian-rupee-sign"></i>${formatPrice(p.price).replace('₹','')}</div>
+                                    <div class="card-actions">
+                                        <a href="update_property.html?id=${p.id}" class="action-btn edit" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        <a href="delete_property.html?id=${p.id}" class="action-btn delete" title="Delete"><i class="fa-regular fa-trash-can"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
+            } else {
+                out.innerHTML = `<div class="listing-list">
+                    ${data.map((p, i) => `
+                        <div class="list-card" style="animation-delay:${i * 0.05}s">
+                            <div class="list-img">${imgOrPlaceholder(p.image)}</div>
+                            <div class="list-body">
+                                <div class="list-info">
+                                    <h2>${p.name}</h2>
+                                    <span><i class="fa-solid fa-location-dot"></i> ${p.location}, ${p.city.charAt(0).toUpperCase()+p.city.slice(1)}</span>
+                                </div>
+                                <span class="list-tag ${p.type}">${p.type}</span>
+                                <div class="card-stat" style="font-size:12px;color:var(--text-secondary)"><i class="fa-solid fa-bed" style="color:var(--text-muted)"></i> ${p.rooms} &nbsp; <i class="fa-solid fa-bath" style="color:var(--text-muted)"></i> ${p.bathrooms} &nbsp; <i class="fa-solid fa-vector-square" style="color:var(--text-muted)"></i> ${p.area} sq ft</div>
+                                <div class="list-price">${formatPrice(p.price)}</div>
+                            </div>
+                            <div class="list-actions">
+                                <a href="update_property.html?id=${p.id}" class="action-btn edit" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
+                                <a href="delete_property.html?id=${p.id}" class="action-btn delete" title="Delete"><i class="fa-regular fa-trash-can"></i></a>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
+            }
+        }
+
+        // Events
+        ['searchInput','typeFilter','cityFilter','sortFilter'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => renderListings(getFiltered()));
+            document.getElementById(id).addEventListener('change', () => renderListings(getFiltered()));
+        });
+
+        // Init
+        renderListings(getFiltered());
+    </script>
+<script>
+    (function(){
+        const token = localStorage.getItem('bp_token');
+        const user  = JSON.parse(localStorage.getItem('bp_user') || 'null');
+        if (!token || !user) { window.location.href = 'login.html'; return; }
+        document.addEventListener('DOMContentLoaded', function(){
+            const name = user.name ? user.name.split(' ')[0] : 'Admin';
+            document.querySelectorAll('.admin-name').forEach(el => el.textContent = name);
+        });
+    })();
+    function bpLogout(){ localStorage.removeItem('bp_token'); localStorage.removeItem('bp_user'); window.location.href = 'login.html'; }
+</script>
+
+</body>
+</html>
